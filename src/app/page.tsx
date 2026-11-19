@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { QRImage } from '@/components/QRImage'
@@ -9,7 +10,6 @@ type CreatedRoom = { code: string; hostKey: string }
 
 export default function Home() {
   const router = useRouter()
-  const [pubName, setPubName] = useState('')
   const [joinCode, setJoinCode] = useState('')
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState('')
@@ -17,13 +17,11 @@ export default function Home() {
 
   const origin = typeof window !== 'undefined' ? window.location.origin : ''
 
-  const createRoom = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!pubName.trim()) return
+  const createDemoRoom = async () => {
     setCreating(true)
     setError('')
     const { data, error: rpcError } = await supabase.rpc('karaoke_create_room', {
-      p_name: pubName.trim(),
+      p_name: 'Sala de prueba',
     })
     setCreating(false)
     if (rpcError || !data?.[0]) {
@@ -47,10 +45,10 @@ export default function Home() {
       <main className="flex min-h-screen flex-col items-center justify-center bg-zinc-950 p-6 text-zinc-100">
         <div className="w-full max-w-lg space-y-6 text-center">
           <div>
-            <p className="text-amber-400">Sala creada</p>
+            <p className="text-amber-400">Sala de prueba creada</p>
             <h1 className="text-5xl font-black tracking-widest">{created.code}</h1>
           </div>
-          <div className="flex justify-center rounded-2xl bg-white p-4">
+          <div className="mx-auto w-fit rounded-2xl bg-white p-4">
             <QRImage url={guestUrl} size={200} />
           </div>
           <p className="text-sm text-zinc-400">
@@ -69,10 +67,7 @@ export default function Home() {
             >
               🎛️ Abrir cabina de control (en tu móvil/tablet)
             </a>
-            <a
-              href={guestUrl}
-              className="block rounded-xl bg-zinc-800 px-4 py-3 hover:bg-zinc-700"
-            >
+            <a href={guestUrl} className="block rounded-xl bg-zinc-800 px-4 py-3 hover:bg-zinc-700">
               📱 Vista del cliente
             </a>
           </div>
@@ -95,24 +90,18 @@ export default function Home() {
             El karaoke de tu bar, sin papeles ni gritos. Los clientes piden desde el móvil, la tele
             canta por turnos.
           </p>
+          <p className="mt-1 text-xs text-zinc-600">Una aplicación de Pubify</p>
         </div>
 
-        <form onSubmit={createRoom} className="space-y-3 rounded-2xl bg-zinc-900 p-6">
-          <h2 className="font-bold">Soy el pub — crear sala</h2>
-          <input
-            value={pubName}
-            onChange={(e) => setPubName(e.target.value)}
-            placeholder="Nombre del local (ej. Pub Raymi)"
-            className="w-full rounded-xl bg-zinc-800 px-4 py-3 outline-none placeholder:text-zinc-500 focus:ring-2 focus:ring-amber-400"
-          />
-          <button
-            disabled={creating || !pubName.trim()}
-            className="w-full rounded-xl bg-amber-500 py-3 font-bold text-zinc-950 hover:bg-amber-400 disabled:opacity-40"
-          >
-            {creating ? 'Creando…' : 'Crear sala de karaoke'}
-          </button>
-          {error && <p className="text-sm text-red-400">{error}</p>}
-        </form>
+        <Link
+          href="/admin"
+          className="block rounded-2xl bg-amber-500 p-6 text-center font-bold text-zinc-950 hover:bg-amber-400"
+        >
+          <span className="text-lg">Soy el pub — entrar con Pubify</span>
+          <span className="mt-1 block text-sm font-medium opacity-70">
+            Tu sala de karaoke y sus ajustes
+          </span>
+        </Link>
 
         <form onSubmit={join} className="space-y-3 rounded-2xl bg-zinc-900 p-6">
           <h2 className="font-bold">Soy cliente — unirme con código</h2>
@@ -130,6 +119,17 @@ export default function Home() {
             Entrar a la sala
           </button>
         </form>
+
+        <div className="text-center">
+          <button
+            onClick={createDemoRoom}
+            disabled={creating}
+            className="text-sm text-zinc-500 underline underline-offset-4 hover:text-zinc-300 disabled:opacity-40"
+          >
+            {creating ? 'Creando…' : 'Crear sala de prueba (sin Pubify)'}
+          </button>
+          {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
+        </div>
       </div>
     </main>
   )

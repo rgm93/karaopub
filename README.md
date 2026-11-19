@@ -7,8 +7,12 @@ atrás de 60 segundos entre cantantes.
 
 ## Cómo funciona
 
-- **El pub** crea una sala en `/` → obtiene un código de 5 letras, un QR para
-  los clientes y dos enlaces privados (TV y cabina).
+- **El pub** entra en `/admin` con sus credenciales de **Pubify**
+  (owner/waiter). Cada pub tiene **una única sala** ligada a su local: se
+  crea sola la primera vez y tiene código fijo, QR imprimible y dos enlaces
+  privados (TV y cabina). Desde `/admin` configura: máx. canciones por
+  persona, segundos de interludio entre turnos, modo de cola (llegada o
+  rotación justa) y tope de la cola.
 - **El cliente** (`/sala/CODIGO`) escribe su nombre, busca la canción y elige
   entre los resultados de YouTube — sin salir de la web.
 - **La tele** (`/tv/CODIGO`) muestra la cola y el QR. Al pulsar "Empezar la
@@ -20,9 +24,10 @@ atrás de 60 segundos entre cantantes.
 ## Stack
 
 - **Next.js 16 + React 19 + Tailwind 4** (App Router, Turbopack)
-- **Supabase** (Postgres + Realtime): tablas `karaoke_*` y RPCs
+- **Supabase** (Postgres + Realtime + Auth): tablas `karaoke_*` y RPCs
   security-definer — toda la lógica de cola vive en la base de datos, el
-  frontend solo usa la anon key.
+  frontend solo usa la anon key. La clave de control vive en
+  `karaoke_room_keys`, inaccesible desde el cliente.
 - **youtubei.js** para la búsqueda de canciones (server-side, sin cuota de
   la API oficial).
 - **YouTube IFrame API** para la reproducción.

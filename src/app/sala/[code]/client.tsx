@@ -8,7 +8,8 @@ import type { SearchResult } from '@/lib/types'
 const ERROR_MESSAGES: Record<string, string> = {
   room_not_found: 'La sala no existe.',
   not_accepting: 'El pub ha pausado las peticiones. Inténtalo en un rato.',
-  singer_limit: 'Ya tienes 5 canciones en cola. Deja cantar a los demás 😄',
+  singer_limit: 'Ya tienes el máximo de canciones en cola. Deja cantar a los demás 😄',
+  queue_full: 'La cola está llena. Espera a que avance un poco.',
 }
 
 export default function SalaClient({ code }: { code: string }) {
