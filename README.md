@@ -7,19 +7,19 @@ atrás de 60 segundos entre cantantes.
 
 ## Cómo funciona
 
-- **El pub** entra en `/admin` con sus credenciales de **Pubify**
+- **El pub** (`/pub-owner`) entra con sus credenciales de **Pubify**
   (owner/waiter). Cada pub tiene **una única sala** ligada a su local: se
   crea sola la primera vez y tiene código fijo, QR imprimible y dos enlaces
-  privados (TV y cabina). Desde `/admin` configura: máx. canciones por
+  privados (TV y cabina). Desde el panel configura: máx. canciones por
   persona, segundos de interludio entre turnos, modo de cola (llegada o
   rotación justa) y tope de la cola.
-- **El cliente** (`/sala/CODIGO`) escribe su nombre, busca la canción y elige
-  entre los resultados de YouTube — sin salir de la web.
-- **La tele** (`/tv/CODIGO`) muestra la cola y el QR. Al pulsar "Empezar la
-  noche" reproduce cada canción a pantalla completa (embed de YouTube),
-  avanza sola al terminar y muestra un countdown de 60 s entre turnos.
-- **La cabina** (`/cabina/CODIGO`) permite al personal saltar canciones,
-  reordenar, quitar peticiones, pausar la cola o vaciarla.
+- **El cliente** (`/pub-clients/CODIGO`) escribe su nombre, busca la canción
+  y elige entre los resultados de YouTube — sin salir de la web.
+- **La tele** (`/pub-owner/tv/CODIGO`) muestra la cola y el QR. Al pulsar
+  "Empezar la noche" reproduce cada canción a pantalla completa (embed de
+  YouTube), avanza sola al terminar y muestra un countdown entre turnos.
+- **La cabina** (`/pub-owner/cabina/CODIGO`) permite al personal saltar
+  canciones, reordenar, quitar peticiones, pausar la cola o vaciarla.
 
 ## Stack
 

@@ -158,9 +158,9 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
     return <main className="flex min-h-screen items-center justify-center bg-zinc-950 text-zinc-400">Cargando tu sala…</main>
   }
 
-  const guestUrl = `${origin}/sala/${myRoom.code}`
-  const tvUrl = `${origin}/tv/${myRoom.code}?k=${myRoom.host_key}`
-  const cabinaUrl = `${origin}/cabina/${myRoom.code}?k=${myRoom.host_key}`
+  const guestUrl = `${origin}/pub-clients/${myRoom.code}`
+  const tvUrl = `${origin}/pub-owner/tv/${myRoom.code}?k=${myRoom.host_key}`
+  const cabinaUrl = `${origin}/pub-owner/cabina/${myRoom.code}?k=${myRoom.host_key}`
 
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-6 bg-zinc-950 p-5 text-zinc-100">

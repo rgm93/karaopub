@@ -18,7 +18,7 @@ export default function TvClient({ code }: { code: string }) {
   const lastFinished = useRef<string | null>(null)
 
   useEffect(() => {
-    setGuestUrl(`${window.location.origin}/sala/${code}`)
+    setGuestUrl(`${window.location.origin}/pub-clients/${code}`)
     const k =
       new URLSearchParams(window.location.search).get('k') ??
       localStorage.getItem(`karaopub_host_${code}`)

@@ -21,9 +21,9 @@ export default function CabinaClient({ code }: { code: string }) {
     if (k) {
       localStorage.setItem(`karaopub_host_${code}`, k)
       setHostKey(k)
-      setTvUrl(`${window.location.origin}/tv/${code}?k=${k}`)
+      setTvUrl(`${window.location.origin}/pub-owner/tv/${code}?k=${k}`)
     }
-    setGuestUrl(`${window.location.origin}/sala/${code}`)
+    setGuestUrl(`${window.location.origin}/pub-clients/${code}`)
   }, [code])
 
   const rpc = useCallback(
