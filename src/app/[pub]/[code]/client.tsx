@@ -10,10 +10,12 @@ const ERROR_MESSAGES: Record<string, string> = {
   not_accepting: 'El pub ha pausado las peticiones. Inténtalo en un rato.',
   singer_limit: 'Ya tienes el máximo de canciones en cola. Deja cantar a los demás 😄',
   queue_full: 'La cola está llena. Espera a que avance un poco.',
+  session_closed: 'La sesión ha terminado. ¡Gracias por cantar!',
 }
 
-export default function SalaClient({ code }: { code: string }) {
+export default function SalaClient({ pubId, code }: { pubId: string; code: string }) {
   const { room, requests, loading, notFound } = useRoom(code)
+  const wrongPub = room !== null && room.pub_id !== pubId
 
   const [name, setName] = useState('')
   const [nameSet, setNameSet] = useState(false)
@@ -86,12 +88,21 @@ export default function SalaClient({ code }: { code: string }) {
   if (loading) {
     return <main className="flex min-h-screen items-center justify-center bg-zinc-950 text-zinc-400">Cargando sala…</main>
   }
-  if (notFound || !room) {
+  if (notFound || !room || wrongPub) {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center gap-3 bg-zinc-950 p-6 text-center text-zinc-100">
         <p className="text-4xl">🎤</p>
         <h1 className="text-xl font-bold">La sala {code} no existe</h1>
         <p className="text-sm text-zinc-400">Revisa el código o escanea el QR de nuevo.</p>
+      </main>
+    )
+  }
+  if (!room.is_active) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center gap-3 bg-zinc-950 p-6 text-center text-zinc-100">
+        <p className="text-4xl">🎤</p>
+        <h1 className="text-xl font-bold">La sesión ha terminado</h1>
+        <p className="text-sm text-zinc-400">¡Gracias por cantar! Hasta la próxima.</p>
       </main>
     )
   }

@@ -9,7 +9,6 @@ export default function CabinaClient({ code }: { code: string }) {
   const { room, requests, loading, notFound } = useRoom(code)
 
   const [hostKey, setHostKey] = useState<string | null>(null)
-  const [guestUrl, setGuestUrl] = useState('')
   const [tvUrl, setTvUrl] = useState('')
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState('')
@@ -23,7 +22,6 @@ export default function CabinaClient({ code }: { code: string }) {
       setHostKey(k)
       setTvUrl(`${window.location.origin}/pub-owner/tv/${code}?k=${k}`)
     }
-    setGuestUrl(`${window.location.origin}/pub-clients/${code}`)
   }, [code])
 
   const rpc = useCallback(
@@ -65,6 +63,10 @@ export default function CabinaClient({ code }: { code: string }) {
 
   const current = requests.find((r) => r.id === room.current_request_id) ?? null
   const queue = requests.filter((r) => r.status === 'queued')
+  const guestUrl =
+    room.pub_id && typeof window !== 'undefined'
+      ? `${window.location.origin}/${room.pub_id}/join?c=${code}`
+      : ''
 
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-5 bg-zinc-950 p-5 text-zinc-100">

@@ -13,12 +13,11 @@ export default function TvClient({ code }: { code: string }) {
   const [started, setStarted] = useState(false)
   const [autoplayBlocked, setAutoplayBlocked] = useState(false)
   const [now, setNow] = useState(Date.now())
-  const [guestUrl, setGuestUrl] = useState('')
   const nextLock = useRef(false)
   const lastFinished = useRef<string | null>(null)
 
   useEffect(() => {
-    setGuestUrl(`${window.location.origin}/pub-clients/${code}`)
+    // La URL del QR se compone cuando cargue la sala (necesita pub_id)
     const k =
       new URLSearchParams(window.location.search).get('k') ??
       localStorage.getItem(`karaopub_host_${code}`)
@@ -31,6 +30,10 @@ export default function TvClient({ code }: { code: string }) {
   const current = requests.find((r) => r.id === room?.current_request_id) ?? null
   const queue = requests.filter((r) => r.status === 'queued')
   const nextUp = queue[0] ?? null
+  const guestUrl =
+    room?.pub_id && typeof window !== 'undefined'
+      ? `${window.location.origin}/${room.pub_id}/join?c=${code}`
+      : ''
 
   const interludeEnd = room?.interlude_until ? new Date(room.interlude_until).getTime() : null
   const interludeActive = interludeEnd !== null && interludeEnd > now

@@ -3,6 +3,7 @@ export type Room = {
   code: string
   name: string
   pub_id: string | null
+  is_active: boolean
   queue_mode: 'fifo' | 'rotation'
   accepting_requests: boolean
   max_songs_per_singer: number
