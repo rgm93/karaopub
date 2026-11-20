@@ -8,7 +8,7 @@ import { KaraokePlayer } from '@/components/KaraokePlayer'
 import type { PlayerApi } from '@/components/KaraokePlayer'
 
 export default function TvClient({ code }: { code: string }) {
-  const { room, requests, bgm, loading, notFound } = useRoom(code)
+  const { room, requests, bgm, loading, notFound, refresh } = useRoom(code)
 
   const [hostKey, setHostKey] = useState<string | null>(null)
   const [started, setStarted] = useState(false)
@@ -16,6 +16,7 @@ export default function TvClient({ code }: { code: string }) {
   const [now, setNow] = useState(Date.now())
   const [doneId, setDoneId] = useState<string | null>(null)
   const [bgmIdx, setBgmIdx] = useState(0)
+  const [engineErr, setEngineErr] = useState('')
   const nextLock = useRef(false)
   const lastFinished = useRef<string | null>(null)
   const playerApi = useRef<PlayerApi | null>(null)
@@ -95,6 +96,12 @@ export default function TvClient({ code }: { code: string }) {
     [code, hostKey],
   )
 
+  // Red de seguridad: si el canal realtime se cae, refresco cada 30s
+  useEffect(() => {
+    const t = setInterval(() => refresh(), 30000)
+    return () => clearInterval(t)
+  }, [refresh])
+
   // Queue engine: when nothing is playing, no interlude is running and there
   // are songs waiting, the TV starts the next one.
   useEffect(() => {
@@ -103,7 +110,10 @@ export default function TvClient({ code }: { code: string }) {
       room.interlude_until && new Date(room.interlude_until).getTime() > Date.now()
     if (!room.current_request_id && !interludeLive && queue.length > 0 && !nextLock.current) {
       nextLock.current = true
-      rpc('karaoke_start_next')
+      rpc('karaoke_start_next').then((res) => {
+        if (res?.error) setEngineErr(`start_next: ${res.error.message}`)
+        else setEngineErr('')
+      })
       setTimeout(() => {
         nextLock.current = false
       }, 2000)
@@ -120,6 +130,7 @@ export default function TvClient({ code }: { code: string }) {
       send().then((res) => {
         if (res?.error) {
           console.error('finish_current falló, reintentando…', res.error)
+          setEngineErr(`finish_current: ${res.error.message}`)
           setTimeout(send, 1500)
         }
       })
@@ -242,22 +253,41 @@ export default function TvClient({ code }: { code: string }) {
         </aside>
       </div>
 
-      {/* ── Overlay: countdown entre turnos ── */}
+      {/* ── Interludio: la cola sigue visible con barra de progreso ── */}
       {started && interludeActive && !current && (
-        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-zinc-950/95 text-center">
-          <p className="text-sm font-bold tracking-[0.4em] text-zinc-500">SIGUIENTE TURNO EN</p>
-          <p className="my-6 text-8xl leading-none font-black text-amber-400 tabular-nums sm:text-9xl lg:text-[12rem]">
-            {countdown}
-          </p>
+        <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black via-zinc-950/95 to-transparent px-6 pt-20 pb-6 text-center lg:px-12">
           {nextUp ? (
             <>
-              <p className="text-2xl font-black lg:text-4xl">{nextUp.singer_name}</p>
-              <p className="mt-2 max-w-2xl truncate text-lg text-zinc-400 lg:text-2xl">{nextUp.title}</p>
-              <p className="mt-6 animate-pulse text-base text-zinc-500 lg:text-lg">¡Ve preparando la voz! 🎤</p>
+              <p className="text-xs font-bold tracking-[0.4em] text-amber-400 lg:text-sm">
+                SIGUIENTE TURNO
+              </p>
+              <p className="mt-2 text-3xl font-black lg:text-5xl">{nextUp.singer_name}</p>
+              <p className="mt-1 truncate text-lg text-zinc-400 lg:text-2xl">{nextUp.title}</p>
             </>
           ) : (
-            <p className="text-2xl text-zinc-400">La cola está vacía — pide tu canción</p>
+            <p className="text-xl text-zinc-400 lg:text-2xl">
+              Cola vacía — ¡pide tu canción y serás el siguiente!
+            </p>
           )}
+          <div className="mx-auto mt-5 flex max-w-4xl items-center gap-4">
+            <div className="h-3 flex-1 overflow-hidden rounded-full bg-zinc-800 lg:h-4">
+              <div
+                className="h-full rounded-full bg-amber-400 transition-[width] duration-300 ease-linear"
+                style={{
+                  width: `${Math.min(
+                    100,
+                    Math.max(
+                      0,
+                      (1 - (countdown ?? 0) / Math.max(1, room.interlude_seconds)) * 100,
+                    ),
+                  )}%`,
+                }}
+              />
+            </div>
+            <span className="w-16 shrink-0 font-mono text-3xl font-black text-amber-400 tabular-nums lg:text-5xl">
+              {countdown}
+            </span>
+          </div>
         </div>
       )}
 
@@ -309,10 +339,11 @@ export default function TvClient({ code }: { code: string }) {
         </div>
       )}
 
-      {/* ── Aviso: sin clave la TV no puede avanzar sola ── */}
-      {started && !hostKey && (
-        <p className="absolute right-0 bottom-0 left-0 z-50 bg-red-600/90 px-4 py-2 text-center text-sm font-bold">
-          Sin clave de control — empareja la tele desde el panel del pub o abre el enlace con ?k=
+      {/* ── Aviso: error del motor / sin clave ── */}
+      {(engineErr || (started && !hostKey)) && (
+        <p className="absolute top-16 right-4 left-4 z-50 rounded-xl bg-red-600/90 px-4 py-2 text-center text-sm font-bold lg:top-20">
+          {engineErr ||
+            'Sin clave de control — empareja la tele desde el panel del pub o abre el enlace con ?k='}
         </p>
       )}
 
