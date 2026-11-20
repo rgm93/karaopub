@@ -39,18 +39,18 @@ function Modal({
       >
         <h2 className="text-lg font-bold">{title}</h2>
         <div className="mt-2 text-sm text-zinc-400">{children}</div>
-        <div className="mt-5 grid grid-cols-2 gap-3">
-          <button
-            onClick={onClose}
-            className="rounded-xl bg-zinc-800 py-3 font-bold hover:bg-zinc-700"
-          >
-            Cancelar
-          </button>
+        <div className="mt-5 grid gap-3">
           <button
             onClick={onConfirm}
-            className="rounded-xl bg-amber-500 py-3 font-bold text-zinc-950 hover:bg-amber-400"
+            className="w-full rounded-xl bg-amber-500 py-3.5 text-base font-bold text-zinc-950 hover:bg-amber-400"
           >
             {confirmLabel}
+          </button>
+          <button
+            onClick={onClose}
+            className="w-full rounded-xl bg-zinc-800 py-3 font-bold hover:bg-zinc-700"
+          >
+            Cancelar
           </button>
         </div>
       </div>
@@ -370,18 +370,18 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
             }
             className="mb-3 flex w-full items-center gap-3 rounded-xl bg-zinc-800/60 p-3 text-left ring-1 ring-zinc-700/50 hover:bg-zinc-800"
           >
-            <span className="w-6 text-center">🎵</span>
+            <span className="w-6 text-center text-lg">🎵</span>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-bold text-zinc-300">Suena de fondo</p>
-              <p className="truncate text-xs text-zinc-400">{room.bgm_now}</p>
+              <p className="truncate text-base font-bold text-zinc-200">Suena de fondo</p>
+              <p className="line-clamp-2 text-sm text-zinc-400">{room.bgm_now}</p>
             </div>
           </button>
         )}
         {queue.length === 0 && !playing && (
           <div className="py-8 text-center">
-            <p className="font-bold text-zinc-300">Cola vacía</p>
-            <p className="mt-3 text-4xl">🎤</p>
-            <p className="mt-3 text-sm text-zinc-500">¡Pide la primera canción!</p>
+            <p className="text-lg font-bold text-zinc-300">Cola vacía</p>
+            <p className="mt-3 text-5xl">🎤</p>
+            <p className="mt-3 text-base text-zinc-400">¡Pide la primera canción!</p>
           </div>
         )}
         <ol className="space-y-3">

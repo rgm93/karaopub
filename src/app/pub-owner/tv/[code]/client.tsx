@@ -357,7 +357,7 @@ export default function TvClient({ code }: { code: string }) {
               onAutoplayBlocked={() => setAutoplayBlocked(true)}
             />
           </div>
-          <p className="absolute bottom-3 left-4 z-10 max-w-md truncate rounded-lg bg-zinc-950/80 px-3 py-1.5 text-xs text-zinc-400 lg:bottom-5 lg:left-6 lg:max-w-xl lg:text-xl">
+          <p className="absolute bottom-3 left-4 z-10 line-clamp-2 max-w-md rounded-lg bg-zinc-950/80 px-3 py-1.5 text-xs text-zinc-400 lg:bottom-5 lg:left-6 lg:max-w-3xl lg:text-xl">
             🎵 Suena de fondo: {bgmVideo.title}
           </p>
         </>
