@@ -404,17 +404,36 @@ export default function CabinaClient({ code }: { code: string }) {
                     ⠿
                   </span>
                   <p className="min-w-0 flex-1 truncate text-xs text-zinc-300">
-                    {room.bgm_now_id === t.video_id ? '▶ ' : ''}
+                    {room.bgm_now_id === t.video_id
+                      ? room.bgm_cmd === 'pause'
+                        ? '⏸ '
+                        : '▶ '
+                      : ''}
                     {t.title}
                   </p>
-                  <button
-                    disabled={busy}
-                    onClick={() => rpc('karaoke_bgm_play', { p_id: t.id })}
-                    title="Sonar ahora"
-                    className="shrink-0 rounded-lg bg-zinc-800 px-2.5 py-1 text-xs text-amber-300 hover:bg-zinc-700 disabled:opacity-40"
-                  >
-                    ▶
-                  </button>
+                  {room.bgm_now_id === t.video_id ? (
+                    <button
+                      disabled={busy}
+                      onClick={() =>
+                        rpc('karaoke_bgm_cmd', {
+                          p_cmd: room.bgm_cmd === 'pause' ? 'resume' : 'pause',
+                        })
+                      }
+                      title={room.bgm_cmd === 'pause' ? 'Reanudar' : 'Pausar'}
+                      className="shrink-0 rounded-lg bg-amber-500 px-2.5 py-1 text-xs font-bold text-zinc-950 hover:bg-amber-400 disabled:opacity-40"
+                    >
+                      {room.bgm_cmd === 'pause' ? '▶' : '⏸'}
+                    </button>
+                  ) : (
+                    <button
+                      disabled={busy}
+                      onClick={() => rpc('karaoke_bgm_play', { p_id: t.id })}
+                      title="Sonar ahora"
+                      className="shrink-0 rounded-lg bg-zinc-800 px-2.5 py-1 text-xs text-amber-300 hover:bg-zinc-700 disabled:opacity-40"
+                    >
+                      ▶
+                    </button>
+                  )}
                   <button
                     disabled={busy}
                     onClick={() => rpc('karaoke_bgm_remove', { p_id: t.id })}

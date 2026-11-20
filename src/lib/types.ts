@@ -19,6 +19,8 @@ export type Room = {
   bgm_shuffle: boolean
   bgm_play_id: string | null
   bgm_play_seq: number
+  bgm_cmd: string | null
+  bgm_cmd_seq: number
   created_at: string
 }
 

@@ -20,7 +20,9 @@ export default function TvClient({ code }: { code: string }) {
   const nextLock = useRef(false)
   const lastFinished = useRef<string | null>(null)
   const playerApi = useRef<PlayerApi | null>(null)
+  const bgmApi = useRef<PlayerApi | null>(null)
   const lastCmdSeq = useRef<number | null>(null)
+  const lastBgmCmdSeq = useRef<number | null>(null)
 
   useEffect(() => {
     // La URL del QR se compone cuando cargue la sala (necesita pub_id)
@@ -216,6 +218,19 @@ export default function TvClient({ code }: { code: string }) {
     }
   }, [room, bgm])
 
+  // Comandos del pub sobre la música de fondo: pause / resume
+  useEffect(() => {
+    if (!room) return
+    if (lastBgmCmdSeq.current === null) {
+      lastBgmCmdSeq.current = room.bgm_cmd_seq
+      return
+    }
+    if (room.bgm_cmd_seq === lastBgmCmdSeq.current) return
+    lastBgmCmdSeq.current = room.bgm_cmd_seq
+    if (room.bgm_cmd === 'pause') bgmApi.current?.pause()
+    else if (room.bgm_cmd === 'resume') bgmApi.current?.resume()
+  }, [room])
+
   if (loading) {
     return <main className="flex min-h-dvh items-center justify-center bg-zinc-950 text-zinc-400">Cargando…</main>
   }
@@ -380,6 +395,7 @@ export default function TvClient({ code }: { code: string }) {
         <>
           <div className="pointer-events-none absolute h-px w-px overflow-hidden opacity-0">
             <KaraokePlayer
+              apiRef={bgmApi}
               videoId={bgmVideo.video_id}
               onEnded={nextBgm}
               onError={nextBgm}
