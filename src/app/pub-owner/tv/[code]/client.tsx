@@ -34,6 +34,42 @@ export default function TvClient({ code }: { code: string }) {
   const current = requests.find((r) => r.id === room?.current_request_id) ?? null
   const queue = requests.filter((r) => r.status === 'queued')
   const nextUp = queue[0] ?? null
+
+  // Media de votos en directo de la canción actual
+  const [voteStats, setVoteStats] = useState<{ avg: number; count: number } | null>(null)
+  useEffect(() => {
+    if (!room?.voting_enabled || !current) {
+      setVoteStats(null)
+      return
+    }
+    let alive = true
+    const fetchVotes = async () => {
+      const { data } = await supabase
+        .from('karaoke_votes')
+        .select('score')
+        .eq('request_id', current.id)
+      if (!alive) return
+      const scores = (data ?? []).map((v) => v.score)
+      setVoteStats(
+        scores.length
+          ? { avg: scores.reduce((a, b) => a + b, 0) / scores.length, count: scores.length }
+          : null,
+      )
+    }
+    fetchVotes()
+    const ch = supabase
+      .channel(`votes:${current.id}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'karaoke_votes', filter: `request_id=eq.${current.id}` },
+        fetchVotes,
+      )
+      .subscribe()
+    return () => {
+      alive = false
+      supabase.removeChannel(ch)
+    }
+  }, [current, room?.voting_enabled])
   const guestUrl =
     room?.pub_id && typeof window !== 'undefined'
       ? `${window.location.origin}/${room.pub_id}/join?c=${code}`
@@ -222,6 +258,14 @@ export default function TvClient({ code }: { code: string }) {
             <p className="text-sm font-bold tracking-[0.4em] text-amber-400">CANTANDO AHORA</p>
             <p className="mt-1 text-2xl font-black lg:text-4xl">{current.singer_name}</p>
             <p className="mt-1 truncate text-base text-zinc-300 lg:text-xl">{current.title}</p>
+            {voteStats && (
+              <p className="mt-2 text-lg font-bold text-amber-300 lg:text-2xl">
+                {'★'.repeat(Math.round(voteStats.avg))}
+                <span className="ml-2 text-base text-zinc-300 lg:text-lg">
+                  {voteStats.avg.toFixed(1)}/5 · {voteStats.count} voto{voteStats.count === 1 ? '' : 's'}
+                </span>
+              </p>
+            )}
             {nextUp && (
               <p className="mt-3 text-sm text-zinc-400">
                 Después: {nextUp.singer_name} — {nextUp.title}

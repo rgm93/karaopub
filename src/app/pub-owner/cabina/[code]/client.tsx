@@ -13,6 +13,9 @@ export default function CabinaClient({ code }: { code: string }) {
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState('')
   const [pairCode, setPairCode] = useState<string | null>(null)
+  const [ranking, setRanking] = useState<
+    { id: string; singer: string; title: string; avg: number; count: number }[]
+  >([])
 
   useEffect(() => {
     const k =
@@ -40,6 +43,39 @@ export default function CabinaClient({ code }: { code: string }) {
     },
     [code, hostKey],
   )
+
+  // Ranking de votos (modo concurso)
+  useEffect(() => {
+    if (!room?.voting_enabled) return
+    let alive = true
+    const load = async () => {
+      const [{ data: votes }, { data: reqs }] = await Promise.all([
+        supabase.from('karaoke_votes').select('request_id, score').eq('room_id', room.id),
+        supabase.from('karaoke_requests').select('id, singer_name, title').eq('room_id', room.id),
+      ])
+      if (!alive) return
+      const sums = new Map<string, { sum: number; count: number }>()
+      for (const v of votes ?? []) {
+        const m = sums.get(v.request_id) ?? { sum: 0, count: 0 }
+        m.sum += v.score
+        m.count += 1
+        sums.set(v.request_id, m)
+      }
+      setRanking(
+        (reqs ?? [])
+          .filter((r) => sums.has(r.id))
+          .map((r) => ({
+            id: r.id,
+            singer: r.singer_name,
+            title: r.title,
+            avg: sums.get(r.id)!.sum / sums.get(r.id)!.count,
+            count: sums.get(r.id)!.count,
+          }))
+          .sort((a, b) => b.avg - a.avg || b.count - a.count),
+      )
+    }
+    load()
+  }, [room?.id, room?.voting_enabled, requests])
 
   if (loading) {
     return <main className="flex min-h-dvh items-center justify-center bg-zinc-950 text-zinc-400">Cargando…</main>
@@ -209,6 +245,32 @@ export default function CabinaClient({ code }: { code: string }) {
           {queue.length === 0 && <p className="text-sm text-zinc-500">Cola vacía.</p>}
         </ol>
       </section>
+
+      {/* Ranking modo concurso */}
+      {room.voting_enabled && ranking.length > 0 && (
+        <section>
+          <p className="mb-2 text-xs font-bold tracking-widest text-zinc-500">
+            🏆 RANKING DE LA NOCHE
+          </p>
+          <ol className="space-y-2">
+            {ranking.slice(0, 10).map((r, i) => (
+              <li key={r.id} className="flex items-center gap-3 rounded-xl bg-zinc-900 p-3">
+                <span className="w-6 text-center font-black text-zinc-500">
+                  {['🥇', '🥈', '🥉'][i] ?? i + 1}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-bold">{r.singer}</p>
+                  <p className="truncate text-xs text-zinc-400">{r.title}</p>
+                </div>
+                <div className="shrink-0 text-right">
+                  <p className="text-sm font-black text-amber-400">{r.avg.toFixed(1)} ★</p>
+                  <p className="text-xs text-zinc-500">{r.count} votos</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
 
       {/* Enlaces */}
       <section className="grid gap-4 pb-8 sm:grid-cols-2">

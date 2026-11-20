@@ -13,6 +13,7 @@ export type Room = {
   interlude_until: string | null
   player_cmd: string | null
   player_cmd_seq: number
+  voting_enabled: boolean
   created_at: string
 }
 

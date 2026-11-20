@@ -23,6 +23,7 @@ export default function PubOwnerPage() {
   const [interlude, setInterlude] = useState(60)
   const [maxQueue, setMaxQueue] = useState(100)
   const [queueMode, setQueueMode] = useState<'fifo' | 'rotation'>('fifo')
+  const [voting, setVoting] = useState(false)
 
   const load = useCallback(async () => {
     const { data: sess } = await supabase.auth.getSession()
@@ -55,6 +56,7 @@ export default function PubOwnerPage() {
         setInterlude(rr.interlude_seconds)
         setMaxQueue(rr.max_queue)
         setQueueMode(rr.queue_mode)
+        setVoting(rr.voting_enabled)
       }
     }
     setLoading(false)
@@ -102,6 +104,7 @@ export default function PubOwnerPage() {
       p_interlude_seconds: interlude,
       p_queue_mode: queueMode,
       p_max_queue: maxQueue,
+      p_voting_enabled: voting,
     })
     if (err) setError('No se pudieron guardar los ajustes.')
     else {
@@ -299,6 +302,20 @@ export default function PubOwnerPage() {
             </select>
           </label>
         </div>
+        <label className="mt-4 flex items-center gap-3 rounded-xl bg-zinc-800 px-4 py-3 text-sm">
+          <input
+            type="checkbox"
+            checked={voting}
+            onChange={(e) => setVoting(e.target.checked)}
+            className="h-5 w-5 accent-amber-500"
+          />
+          <span>
+            <span className="font-bold">Modo concurso 🏆</span>
+            <span className="block text-zinc-400">
+              El público puntúa cada actuación de 1 a 5 estrellas
+            </span>
+          </span>
+        </label>
         <button className="w-full rounded-xl bg-amber-500 py-3 font-bold text-zinc-950 hover:bg-amber-400">
           {saved ? '✓ Guardado' : 'Guardar ajustes'}
         </button>

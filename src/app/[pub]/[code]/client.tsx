@@ -73,6 +73,8 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
   const [deviceKey, setDeviceKey] = useState<string | null>(null)
   const [pendingPick, setPendingPick] = useState<SearchResult | null>(null)
   const [pendingCancel, setPendingCancel] = useState<KaraokeRequest | null>(null)
+  const [nameTaken, setNameTaken] = useState(false)
+  const [myVote, setMyVote] = useState(0)
 
   useEffect(() => {
     const n = localStorage.getItem('karaopub_name')
@@ -92,12 +94,37 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
   const queue = requests.filter((r) => r.status === 'queued')
   const playing = requests.find((r) => r.status === 'playing') ?? null
 
-  const saveName = (e: React.FormEvent) => {
+  const saveName = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!name.trim()) return
-    localStorage.setItem('karaopub_name', name.trim())
-    setName(name.trim())
+    const n = name.trim()
+    if (!n || !room) return
+    // ¿Ya hay alguien con ese nombre en la cola (desde otro dispositivo)?
+    const { data: clash } = await supabase
+      .from('karaoke_requests')
+      .select('singer_key')
+      .eq('room_id', room.id)
+      .in('status', ['queued', 'playing'])
+      .ilike('singer_name', n)
+    const taken = (clash ?? []).some((r) => r.singer_key !== deviceKey)
+    if (taken) {
+      setNameTaken(true)
+      return
+    }
+    localStorage.setItem('karaopub_name', n)
+    setName(n)
+    setNameTaken(false)
     setNameSet(true)
+  }
+
+  const vote = async (score: number) => {
+    if (!playing || !deviceKey) return
+    const { error } = await supabase.rpc('karaoke_vote', {
+      p_code: code,
+      p_request_id: playing.id,
+      p_voter_key: deviceKey,
+      p_score: score,
+    })
+    if (!error) setMyVote(score)
   }
 
   const search = async (e: React.FormEvent) => {
@@ -188,12 +215,37 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
           <p className="text-zinc-400">¿Cómo te llamamos cuando te toque cantar?</p>
           <input
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => {
+              setName(e.target.value)
+              setNameTaken(false)
+            }}
             placeholder="Tu nombre o apodo"
             maxLength={40}
             autoFocus
             className="w-full rounded-xl bg-zinc-800 px-4 py-3 text-center text-lg outline-none placeholder:text-zinc-500 focus:ring-2 focus:ring-amber-400"
           />
+          {nameTaken && (
+            <div className="rounded-xl bg-zinc-900 p-3 text-sm">
+              <p className="text-amber-300">
+                Ya hay un(a) {name.trim()} en la cola. Elige un distintivo:
+              </p>
+              <div className="mt-2 flex flex-wrap justify-center gap-2">
+                {[`${name.trim()} 2`, `${name.trim()} 🎤`, `${name.trim()} ⭐`].map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => {
+                      setName(s)
+                      setNameTaken(false)
+                    }}
+                    className="rounded-lg bg-zinc-800 px-3 py-1.5 font-bold hover:bg-zinc-700"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
           <button
             disabled={!name.trim()}
             className="w-full rounded-xl bg-amber-500 py-3 font-bold text-zinc-950 hover:bg-amber-400 disabled:opacity-40"
@@ -219,6 +271,25 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
           <p className="text-xs font-bold tracking-widest text-amber-400">CANTANDO AHORA</p>
           <p className="mt-1 font-bold">{playing.singer_name}</p>
           <p className="text-sm text-zinc-300">{playing.title}</p>
+          {room.voting_enabled && (
+            <div className="mt-3">
+              <p className="text-xs text-zinc-400">¿Qué tal lo está haciendo?</p>
+              <div className="mt-1 flex justify-center gap-1">
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => vote(s)}
+                    className={`px-1.5 text-2xl transition-transform active:scale-125 ${
+                      s <= myVote ? '' : 'opacity-30 grayscale'
+                    }`}
+                  >
+                    ⭐
+                  </button>
+                ))}
+              </div>
+              {myVote > 0 && <p className="mt-1 text-xs text-zinc-500">¡Votado {myVote}/5!</p>}
+            </div>
+          )}
         </div>
       )}
 
@@ -313,8 +384,17 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
           onConfirm={() => pick(pendingPick)}
           onClose={() => setPendingPick(null)}
         >
+          <div className="mb-3 overflow-hidden rounded-xl">
+            <iframe
+              src={`https://www.youtube.com/embed/${pendingPick.videoId}?rel=0`}
+              title={pendingPick.title}
+              allow="autoplay; encrypted-media; picture-in-picture"
+              allowFullScreen
+              className="aspect-video w-full"
+            />
+          </div>
           <p className="font-bold text-zinc-200">{pendingPick.title}</p>
-          <p className="mt-1">{pendingPick.channel}</p>
+          <p className="mt-1">{pendingPick.channel} · dale al play para escucharla antes</p>
         </Modal>
       )}
       {pendingCancel && (
