@@ -51,7 +51,7 @@ function IPhoneMock() {
             </span>
           </div>
           {/* UI de la app */}
-          <div className="space-y-2 p-2.5 pt-2 text-left">
+          <div className="space-y-2 p-2.5 pt-4 text-left">
             <p className="text-center text-[10px] font-black">
               Karao<span className="text-amber-400">Pub</span>{' '}
               <span className="font-normal text-zinc-500">· Pub Raymi</span>
@@ -184,7 +184,7 @@ function TVMock() {
               <FakeQR />
             </div>
             <p className="text-[10px] font-black text-zinc-100 sm:text-sm">Pide tu canción</p>
-            <p className="font-mono text-sm font-black tracking-[0.2em] text-amber-400 sm:text-lg">
+            <p className="font-mono text-xs font-black tracking-[0.15em] text-amber-400 sm:text-sm">
               H R 7 4 P
             </p>
           </div>
