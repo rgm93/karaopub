@@ -242,7 +242,7 @@ export default function TvClient({ code }: { code: string }) {
         <section className="min-w-0 flex-1 overflow-hidden">
           <p className="mb-4 text-sm font-bold tracking-[0.3em] text-zinc-500 lg:text-lg">A CONTINUACIÓN</p>
           {queue.length === 0 && !current && (
-            <div className="flex h-full flex-col items-center justify-center text-center">
+            <div className="flex h-full flex-col items-center justify-start pt-10 text-center lg:pt-24">
               <p className="text-6xl lg:text-8xl">🎤</p>
               <p className="mt-4 text-4xl font-black text-zinc-300 lg:text-6xl">La cola está vacía</p>
               <p className="mt-3 text-xl text-zinc-500 lg:text-3xl">Escanea el QR y pide la primera canción</p>
