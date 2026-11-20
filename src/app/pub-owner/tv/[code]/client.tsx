@@ -8,13 +8,14 @@ import { KaraokePlayer } from '@/components/KaraokePlayer'
 import type { PlayerApi } from '@/components/KaraokePlayer'
 
 export default function TvClient({ code }: { code: string }) {
-  const { room, requests, loading, notFound } = useRoom(code)
+  const { room, requests, bgm, loading, notFound } = useRoom(code)
 
   const [hostKey, setHostKey] = useState<string | null>(null)
   const [started, setStarted] = useState(false)
   const [autoplayBlocked, setAutoplayBlocked] = useState(false)
   const [now, setNow] = useState(Date.now())
   const [doneId, setDoneId] = useState<string | null>(null)
+  const [bgmIdx, setBgmIdx] = useState(0)
   const nextLock = useRef(false)
   const lastFinished = useRef<string | null>(null)
   const playerApi = useRef<PlayerApi | null>(null)
@@ -34,6 +35,7 @@ export default function TvClient({ code }: { code: string }) {
   const current = requests.find((r) => r.id === room?.current_request_id) ?? null
   const queue = requests.filter((r) => r.status === 'queued')
   const nextUp = queue[0] ?? null
+  const bgmVideo = bgm.length > 0 ? bgm[bgmIdx % bgm.length] : null
 
   // Media de votos en directo de la canción actual
   const [voteStats, setVoteStats] = useState<{ avg: number; count: number } | null>(null)
@@ -125,6 +127,18 @@ export default function TvClient({ code }: { code: string }) {
     [current, rpc],
   )
 
+  // Watchdog: si el vídeo se marcó como terminado en local pero la sala
+  // sigue en 'playing' (RPC perdido), reintenta hasta que avance.
+  useEffect(() => {
+    if (!started || !room || !hostKey || !doneId) return
+    const t = setInterval(() => {
+      if (room.current_request_id === doneId) {
+        rpc('karaoke_finish_current', { p_outcome: 'done' })
+      }
+    }, 4000)
+    return () => clearInterval(t)
+  }, [started, room, hostKey, doneId, rpc])
+
   // Comandos del pub: pause / resume / restart
   useEffect(() => {
     if (!room || room.player_cmd_seq === lastCmdSeq.current) return
@@ -202,23 +216,26 @@ export default function TvClient({ code }: { code: string }) {
           </ol>
         </section>
 
-        <aside className="flex w-full shrink-0 flex-row items-center justify-center gap-5 rounded-2xl bg-zinc-900 p-4 text-center lg:w-72 lg:flex-col lg:gap-4 lg:p-6">
-          <div className="rounded-xl bg-white p-3">
-            <QRImage url={guestUrl} size={160} />
+        <aside className="flex w-full shrink-0 flex-row items-center justify-center gap-5 rounded-2xl bg-zinc-900 p-4 text-center lg:w-96 lg:flex-col lg:gap-6 lg:p-8">
+          <div className="rounded-2xl bg-white p-4">
+            <QRImage url={guestUrl} size={280} />
           </div>
           <div>
-            <p className="text-xl font-bold">Pide tu canción</p>
-            <p className="mt-1 text-sm text-zinc-400">
+            <p className="text-xl font-bold lg:text-3xl">Pide tu canción</p>
+            <p className="mt-2 text-sm text-zinc-400 lg:text-lg">
               Escanea el QR o entra en
               <br />
               <span className="font-mono text-zinc-200">karaopub.vercel.app/join</span>
             </p>
-            <p className="mt-2 text-xs text-zinc-500">
-              y escribe el código <span className="font-mono font-bold text-amber-400">{code}</span>
+            <p className="mt-3 text-xs text-zinc-500 lg:text-base">
+              y escribe el código{' '}
+              <span className="font-mono text-lg font-black tracking-[0.3em] text-amber-400 lg:text-2xl">
+                {code}
+              </span>
             </p>
           </div>
           {!room.accepting_requests && (
-            <p className="rounded-lg bg-red-500/20 px-3 py-1 text-sm text-red-300">
+            <p className="rounded-lg bg-red-500/20 px-3 py-1 text-sm text-red-300 lg:text-base">
               Peticiones pausadas
             </p>
           )}
@@ -272,6 +289,23 @@ export default function TvClient({ code }: { code: string }) {
               </p>
             )}
           </div>
+        </div>
+      )}
+
+      {/* ── Música de fondo: suena en la espera (countdown / cola vacía) ── */}
+      {started && !current && bgmVideo && (
+        <div className="absolute right-4 bottom-4 z-30 w-40 overflow-hidden rounded-xl opacity-90 ring-1 ring-zinc-700 lg:w-72">
+          <div className="aspect-video bg-black">
+            <KaraokePlayer
+              videoId={bgmVideo.video_id}
+              onEnded={() => setBgmIdx((i) => i + 1)}
+              onError={() => setBgmIdx((i) => i + 1)}
+              onAutoplayBlocked={() => setAutoplayBlocked(true)}
+            />
+          </div>
+          <p className="truncate bg-zinc-900 px-2 py-1 text-xs text-zinc-400">
+            🎵 {bgmVideo.title}
+          </p>
         </div>
       )}
 

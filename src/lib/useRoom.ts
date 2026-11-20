@@ -2,11 +2,12 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from './supabase'
-import type { KaraokeRequest, Room } from './types'
+import type { BgmTrack, KaraokeRequest, Room } from './types'
 
 export function useRoom(code: string) {
   const [room, setRoom] = useState<Room | null>(null)
   const [requests, setRequests] = useState<KaraokeRequest[]>([])
+  const [bgm, setBgm] = useState<BgmTrack[]>([])
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
 
@@ -29,6 +30,12 @@ export function useRoom(code: string) {
       .in('status', ['queued', 'playing'])
       .order('position', { ascending: true })
     setRequests((reqs ?? []) as KaraokeRequest[])
+    const { data: tracks } = await supabase
+      .from('karaoke_bgm')
+      .select('*')
+      .eq('room_id', r.id)
+      .order('position', { ascending: true })
+    setBgm((tracks ?? []) as BgmTrack[])
     setLoading(false)
   }, [code])
 
@@ -50,6 +57,11 @@ export function useRoom(code: string) {
         { event: '*', schema: 'public', table: 'karaoke_rooms', filter: `id=eq.${room.id}` },
         () => refresh(),
       )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'karaoke_bgm', filter: `room_id=eq.${room.id}` },
+        () => refresh(),
+      )
       .subscribe()
     return () => {
       supabase.removeChannel(channel)
@@ -57,5 +69,5 @@ export function useRoom(code: string) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [room?.id, refresh])
 
-  return { room, requests, loading, notFound, refresh }
+  return { room, requests, bgm, loading, notFound, refresh }
 }

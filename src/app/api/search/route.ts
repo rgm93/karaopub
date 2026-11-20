@@ -23,7 +23,7 @@ async function getTube() {
 // ── 1. Innertube (gratis, sin cuota; YouTube a veces bloquea IPs de DC) ──
 async function searchInnertube(query: string): Promise<SearchResult[]> {
   const yt = await getTube()
-  const search = await yt.search(`${query} karaoke`, { type: 'video' })
+  const search = await yt.search(query, { type: 'video' })
   return ((search.results ?? []) as { type?: string }[])
     .filter((v) => v.type === 'Video')
     .slice(0, 10)
@@ -57,7 +57,7 @@ async function searchInvidious(query: string): Promise<SearchResult[]> {
   for (const base of INVIDIOUS) {
     try {
       const res = await fetch(
-        `${base}/api/v1/search?q=${encodeURIComponent(`${query} karaoke`)}&type=video`,
+        `${base}/api/v1/search?q=${encodeURIComponent(query)}&type=video`,
         { signal: AbortSignal.timeout(4000), next: { revalidate: 0 } },
       )
       if (!res.ok) continue
@@ -95,7 +95,7 @@ async function searchDataApi(query: string): Promise<SearchResult[]> {
   if (!key) return []
   const url =
     `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video` +
-    `&videoEmbeddable=true&maxResults=10&q=${encodeURIComponent(`${query} karaoke`)}&key=${key}`
+    `&videoEmbeddable=true&maxResults=10&q=${encodeURIComponent(query)}&key=${key}`
   const res = await fetch(url, { next: { revalidate: 0 } })
   if (!res.ok) return []
   const data = (await res.json()) as {
@@ -120,22 +120,25 @@ export async function GET(request: Request) {
   const q = searchParams.get('q')?.trim()
   if (!q || q.length < 2) return Response.json({ results: [] })
 
+  // ?music=1 → canciones normales para la música de fondo (sin filtro karaoke)
+  const query = searchParams.get('music') === '1' ? q : `${q} karaoke`
+
   let results: SearchResult[] = []
   let source = 'none'
 
   try {
-    results = await searchInnertube(q)
+    results = await searchInnertube(query)
     if (results.length) source = 'innertube'
   } catch {
     // sigue con el siguiente
   }
   if (!results.length) {
-    results = await searchInvidious(q)
+    results = await searchInvidious(query)
     if (results.length) source = 'invidious'
   }
   if (!results.length) {
     try {
-      results = await searchDataApi(q)
+      results = await searchDataApi(query)
       if (results.length) source = 'data-api'
     } catch {
       // agotado

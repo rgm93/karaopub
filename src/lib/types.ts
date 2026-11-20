@@ -35,6 +35,14 @@ export type KaraokeRequest = {
   played_at: string | null
 }
 
+export type BgmTrack = {
+  id: string
+  room_id: string
+  video_id: string
+  title: string
+  position: number
+}
+
 export type SearchResult = {
   videoId: string
   title: string

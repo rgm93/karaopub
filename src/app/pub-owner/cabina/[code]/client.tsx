@@ -6,7 +6,7 @@ import { useRoom } from '@/lib/useRoom'
 import { QRImage } from '@/components/QRImage'
 
 export default function CabinaClient({ code }: { code: string }) {
-  const { room, requests, loading, notFound } = useRoom(code)
+  const { room, requests, bgm, loading, notFound } = useRoom(code)
 
   const [hostKey, setHostKey] = useState<string | null>(null)
   const [tvUrl, setTvUrl] = useState('')
@@ -16,6 +16,11 @@ export default function CabinaClient({ code }: { code: string }) {
   const [ranking, setRanking] = useState<
     { id: string; singer: string; title: string; avg: number; count: number }[]
   >([])
+  const [bgmQuery, setBgmQuery] = useState('')
+  const [bgmResults, setBgmResults] = useState<
+    { videoId: string; title: string; channel: string }[]
+  >([])
+  const [bgmSearching, setBgmSearching] = useState(false)
 
   useEffect(() => {
     const k =
@@ -271,6 +276,88 @@ export default function CabinaClient({ code }: { code: string }) {
           </ol>
         </section>
       )}
+
+      {/* Música de fondo: suena en la TV mientras nadie canta */}
+      <section className="rounded-2xl bg-zinc-900 p-4">
+        <p className="text-xs font-bold tracking-widest text-zinc-500">
+          🎵 MÚSICA DE FONDO ({bgm.length})
+        </p>
+        <p className="mt-1 text-xs text-zinc-500">
+          Suena en la tele durante la cuenta atrás y cuando la cola está vacía.
+        </p>
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault()
+            if (!bgmQuery.trim()) return
+            setBgmSearching(true)
+            const res = await fetch(`/api/search?q=${encodeURIComponent(bgmQuery.trim())}&music=1`)
+            const data = await res.json()
+            setBgmResults(data.results ?? [])
+            setBgmSearching(false)
+          }}
+          className="mt-3 flex gap-2"
+        >
+          <input
+            value={bgmQuery}
+            onChange={(e) => setBgmQuery(e.target.value)}
+            placeholder="Buscar música en YouTube…"
+            className="min-w-0 flex-1 rounded-xl bg-zinc-800 px-3 py-2 text-sm outline-none placeholder:text-zinc-500 focus:ring-2 focus:ring-amber-400"
+          />
+          <button
+            disabled={bgmSearching || !bgmQuery.trim()}
+            className="shrink-0 rounded-xl bg-amber-500 px-4 py-2 text-sm font-bold text-zinc-950 hover:bg-amber-400 disabled:opacity-40"
+          >
+            {bgmSearching ? '…' : 'Buscar'}
+          </button>
+        </form>
+        {bgmResults.length > 0 && (
+          <ol className="mt-3 space-y-2">
+            {bgmResults.map((r) => (
+              <li key={r.videoId} className="flex items-center gap-2 rounded-xl bg-zinc-800 p-2">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs font-bold">{r.title}</p>
+                  <p className="truncate text-xs text-zinc-500">{r.channel}</p>
+                </div>
+                <button
+                  disabled={busy}
+                  onClick={() =>
+                    supabase
+                      .rpc('karaoke_bgm_add', {
+                        p_code: code,
+                        p_host_key: hostKey,
+                        p_video_id: r.videoId,
+                        p_title: r.title,
+                      })
+                      .then(({ error }) => {
+                        if (error) setMsg(error.message === 'duplicate_bgm' ? 'Ya está en la lista.' : 'No se pudo añadir.')
+                        else setBgmResults(bgmResults.filter((x) => x.videoId !== r.videoId))
+                      })
+                  }
+                  className="shrink-0 rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-black text-zinc-950 hover:bg-amber-400 disabled:opacity-40"
+                >
+                  + Añadir
+                </button>
+              </li>
+            ))}
+          </ol>
+        )}
+        {bgm.length > 0 && (
+          <ol className="mt-3 space-y-2">
+            {bgm.map((t) => (
+              <li key={t.id} className="flex items-center gap-2 rounded-xl bg-zinc-800/60 p-2">
+                <p className="min-w-0 flex-1 truncate text-xs text-zinc-300">{t.title}</p>
+                <button
+                  disabled={busy}
+                  onClick={() => rpc('karaoke_bgm_remove', { p_id: t.id })}
+                  className="shrink-0 rounded-lg bg-zinc-800 px-2.5 py-1 text-xs text-red-300 hover:bg-zinc-700 disabled:opacity-40"
+                >
+                  ✕
+                </button>
+              </li>
+            ))}
+          </ol>
+        )}
+      </section>
 
       {/* Enlaces */}
       <section className="grid gap-4 pb-8 sm:grid-cols-2">
