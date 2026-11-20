@@ -126,6 +126,18 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
 
   const queue = requests.filter((r) => r.status === 'queued')
   const playing = requests.find((r) => r.status === 'playing') ?? null
+  const imNext = queue.length > 0 && myIds.includes(queue[0].id)
+
+  // Aviso "¡te toca!": vibra una vez al convertirte en el siguiente
+  const warnedNext = useRef(false)
+  useEffect(() => {
+    if (imNext && !warnedNext.current) {
+      warnedNext.current = true
+      navigator.vibrate?.([250, 120, 250])
+    } else if (!imNext) {
+      warnedNext.current = false
+    }
+  }, [imNext])
 
   const saveName = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -313,6 +325,12 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
           </p>
         )}
       </header>
+
+      {imNext && (
+        <div className="animate-pulse rounded-2xl bg-amber-500 p-4 text-center font-black text-zinc-950 shadow-lg shadow-amber-500/30">
+          🎤 ¡Te toca! Eres el siguiente — ve preparándote
+        </div>
+      )}
 
       {playing && (
         <div className="rounded-2xl bg-amber-500/10 p-4 text-center ring-1 ring-amber-500/40">
