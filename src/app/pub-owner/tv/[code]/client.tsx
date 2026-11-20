@@ -157,7 +157,14 @@ export default function TvClient({ code }: { code: string }) {
     const key = `${title ?? ''}|${bgmVideo?.video_id ?? ''}`
     if (key === bgmPublished.current || !hostKey) return
     bgmPublished.current = key
-    rpc('karaoke_bgm_now', { p_title: title ?? '', p_video_id: bgmVideo?.video_id ?? '' })
+    rpc('karaoke_bgm_now', { p_title: title ?? '', p_video_id: bgmVideo?.video_id ?? '' }).then(
+      (res) => {
+        if (res?.error) {
+          console.error('bgm_now falló', res.error)
+          setEngineErr(`bgm_now: ${res.error.message}`)
+        }
+      },
+    )
   }, [started, current, bgmVideo, hostKey, rpc])
 
   // Comandos del pub: pause / resume / restart
@@ -191,9 +198,6 @@ export default function TvClient({ code }: { code: string }) {
           Karao<span className="text-amber-400">Pub</span>
           <span className="ml-4 hidden text-xl font-medium text-zinc-400 sm:inline lg:text-2xl">{room.name}</span>
         </h1>
-        <span className="shrink-0 rounded-xl bg-zinc-800 px-4 py-2 font-mono text-lg tracking-[0.3em] lg:text-3xl">
-          {code}
-        </span>
       </header>
 
       {/* ── Contenido: cola + QR ── */}
