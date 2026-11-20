@@ -41,10 +41,14 @@ export default function TvClient({ code }: { code: string }) {
     setBgmId(() => {
       if (bgm.length === 0) return null
       if (bgm.length === 1) return bgm[0].id
+      if (room && !room.bgm_shuffle) {
+        const i = bgm.findIndex((t) => t.id === bgmVideo?.id)
+        return bgm[(i + 1) % bgm.length].id
+      }
       const others = bgm.filter((t) => t.id !== bgmVideo?.id)
       return others[Math.floor(Math.random() * others.length)].id
     })
-  }, [bgm, bgmVideo])
+  }, [bgm, bgmVideo, room])
 
   // Media de votos en directo de la canción actual
   const [voteStats, setVoteStats] = useState<{ avg: number; count: number } | null>(null)
@@ -186,6 +190,21 @@ export default function TvClient({ code }: { code: string }) {
     else if (room.player_cmd === 'restart') api.restart()
     else if (room.player_cmd === 'nearend') api.nearEnd()
   }, [room])
+
+  // El pub pide sonar un tema de fondo concreto
+  const lastBgmPlaySeq = useRef<number | null>(null)
+  useEffect(() => {
+    if (!room) return
+    if (lastBgmPlaySeq.current === null) {
+      lastBgmPlaySeq.current = room.bgm_play_seq
+      return
+    }
+    if (room.bgm_play_seq === lastBgmPlaySeq.current) return
+    lastBgmPlaySeq.current = room.bgm_play_seq
+    if (room.bgm_play_id && bgm.some((t) => t.id === room.bgm_play_id)) {
+      setBgmId(room.bgm_play_id)
+    }
+  }, [room, bgm])
 
   if (loading) {
     return <main className="flex min-h-dvh items-center justify-center bg-zinc-950 text-zinc-400">Cargando…</main>

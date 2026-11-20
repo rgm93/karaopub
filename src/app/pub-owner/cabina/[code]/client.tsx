@@ -21,6 +21,7 @@ export default function CabinaClient({ code }: { code: string }) {
     { videoId: string; title: string; channel: string }[]
   >([])
   const [bgmSearching, setBgmSearching] = useState(false)
+  const [dragIdx, setDragIdx] = useState<number | null>(null)
 
   useEffect(() => {
     const k =
@@ -213,7 +214,9 @@ export default function CabinaClient({ code }: { code: string }) {
 
       {/* Cola */}
       <section>
-        <p className="mb-2 text-xs font-bold tracking-widest text-zinc-500">EN COLA ({queue.length})</p>
+        <p className="mb-2 text-sm font-bold tracking-widest text-zinc-400">
+          🎤 EN COLA ({queue.length})
+        </p>
         <ol className="space-y-3">
           {queue.map((r, i) => (
             <li key={r.id} className="flex items-center gap-3 rounded-xl bg-zinc-900 p-3">
@@ -365,20 +368,68 @@ export default function CabinaClient({ code }: { code: string }) {
           </ol>
         )}
         {bgm.length > 0 && (
-          <ol className="mt-3 space-y-2">
-            {bgm.map((t) => (
-              <li key={t.id} className="flex items-center gap-2 rounded-xl bg-zinc-800/60 p-2">
-                <p className="min-w-0 flex-1 truncate text-xs text-zinc-300">{t.title}</p>
-                <button
-                  disabled={busy}
-                  onClick={() => rpc('karaoke_bgm_remove', { p_id: t.id })}
-                  className="shrink-0 rounded-lg bg-zinc-800 px-2.5 py-1 text-xs text-red-300 hover:bg-zinc-700 disabled:opacity-40"
+          <>
+            <button
+              disabled={busy}
+              onClick={() => rpc('karaoke_bgm_set_shuffle', { p_value: !room.bgm_shuffle })}
+              className="mt-3 w-full rounded-xl bg-zinc-800 py-2 text-sm font-bold hover:bg-zinc-700 disabled:opacity-40"
+            >
+              {room.bgm_shuffle ? '🔀 Orden aleatorio' : '📋 Orden de la lista'}
+            </button>
+            <ol className="mt-3 space-y-2">
+              {bgm.map((t, i) => (
+                <li
+                  key={t.id}
+                  draggable
+                  onDragStart={() => setDragIdx(i)}
+                  onDragEnd={() => setDragIdx(null)}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={() => {
+                    if (dragIdx === null || dragIdx === i) return
+                    const ids = bgm.map((x) => x.id)
+                    const [moved] = ids.splice(dragIdx, 1)
+                    ids.splice(i, 0, moved)
+                    setDragIdx(null)
+                    rpc('karaoke_bgm_reorder', { p_ids: ids })
+                  }}
+                  className={`flex items-center gap-2 rounded-xl p-2 ${
+                    dragIdx === i ? 'opacity-40' : ''
+                  } ${
+                    room.bgm_now_id === t.video_id
+                      ? 'bg-amber-500/15 ring-1 ring-amber-500/40'
+                      : 'bg-zinc-800/60'
+                  }`}
                 >
-                  ✕
-                </button>
-              </li>
-            ))}
-          </ol>
+                  <span className="shrink-0 cursor-grab text-zinc-600" title="Arrastra para reordenar">
+                    ⠿
+                  </span>
+                  <p className="min-w-0 flex-1 truncate text-xs text-zinc-300">
+                    {room.bgm_now_id === t.video_id ? '▶ ' : ''}
+                    {t.title}
+                  </p>
+                  <button
+                    disabled={busy}
+                    onClick={() => rpc('karaoke_bgm_play', { p_id: t.id })}
+                    title="Sonar ahora"
+                    className="shrink-0 rounded-lg bg-zinc-800 px-2.5 py-1 text-xs text-amber-300 hover:bg-zinc-700 disabled:opacity-40"
+                  >
+                    ▶
+                  </button>
+                  <button
+                    disabled={busy}
+                    onClick={() => rpc('karaoke_bgm_remove', { p_id: t.id })}
+                    title="Quitar de la lista"
+                    className="shrink-0 rounded-lg bg-zinc-800 px-2.5 py-1 text-xs text-red-300 hover:bg-zinc-700 disabled:opacity-40"
+                  >
+                    ✕
+                  </button>
+                </li>
+              ))}
+            </ol>
+            <p className="mt-2 text-xs text-zinc-600">
+              Arrastra con ⠿ para reordenar · ▶ la pone ahora mismo
+            </p>
+          </>
         )}
       </section>
 

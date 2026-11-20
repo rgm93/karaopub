@@ -16,6 +16,9 @@ export type Room = {
   voting_enabled: boolean
   bgm_now: string | null
   bgm_now_id: string | null
+  bgm_shuffle: boolean
+  bgm_play_id: string | null
+  bgm_play_seq: number
   created_at: string
 }
 
