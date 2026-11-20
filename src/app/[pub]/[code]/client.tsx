@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRoom } from '@/lib/useRoom'
 import { Logo } from '@/components/Logo'
+import { YtPreview } from '@/components/YtPreview'
 import type { KaraokeRequest, SearchResult } from '@/lib/types'
 
 const ERROR_MESSAGES: Record<string, string> = {
@@ -21,12 +22,14 @@ function Modal({
   title,
   children,
   confirmLabel = 'Confirmar',
+  confirmDisabled = false,
   onConfirm,
   onClose,
 }: {
   title: string
   children: React.ReactNode
   confirmLabel?: React.ReactNode
+  confirmDisabled?: boolean
   onConfirm: () => void
   onClose: () => void
 }) {
@@ -44,7 +47,8 @@ function Modal({
         <div className="mt-5 grid gap-3">
           <button
             onClick={onConfirm}
-            className="w-full rounded-xl bg-amber-500 py-3.5 text-base font-bold text-zinc-950 hover:bg-amber-400"
+            disabled={confirmDisabled}
+            className="w-full rounded-xl bg-amber-500 py-3.5 text-base font-bold text-zinc-950 hover:bg-amber-400 disabled:opacity-40"
           >
             {confirmLabel}
           </button>
@@ -74,6 +78,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
   const [myIds, setMyIds] = useState<string[]>([])
   const [deviceKey, setDeviceKey] = useState<string | null>(null)
   const [pendingPick, setPendingPick] = useState<SearchResult | null>(null)
+  const [pickError, setPickError] = useState(false)
   const [blockedPick, setBlockedPick] = useState<SearchResult | null>(null)
   const [pendingCancel, setPendingCancel] = useState<KaraokeRequest | null>(null)
   const [nameTaken, setNameTaken] = useState(false)
@@ -90,6 +95,11 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
     title: string
     heading: string
   } | null>(null)
+
+  // Resetea el estado de error del preview cada vez que se abre el modal
+  useEffect(() => {
+    if (pendingPick) setPickError(false)
+  }, [pendingPick])
 
   useEffect(() => {
     const n = localStorage.getItem('karaopub_name')
@@ -449,20 +459,25 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
         <Modal
           title="¿Apuntar esta canción?"
           confirmLabel="🎤 ¡A cantar!"
+          confirmDisabled={pickError}
           onConfirm={() => pick(pendingPick)}
           onClose={() => setPendingPick(null)}
         >
           <div className="mb-3 overflow-hidden rounded-xl">
-            <iframe
-              src={`https://www.youtube.com/embed/${pendingPick.videoId}?rel=0`}
-              title={pendingPick.title}
-              allow="autoplay; encrypted-media; picture-in-picture"
-              allowFullScreen
-              className="aspect-video w-full"
+            <YtPreview
+              videoId={pendingPick.videoId}
+              onError={() => setPickError(true)}
             />
           </div>
           <p className="font-bold text-zinc-200">{pendingPick.title}</p>
-          <p className="mt-1">{pendingPick.channel} · dale al play para escucharla antes</p>
+          {pickError ? (
+            <p className="mt-1 text-red-300">
+              Este vídeo no se puede reproducir fuera de YouTube — la tele no podría ponerlo. Elige
+              otro resultado.
+            </p>
+          ) : (
+            <p className="mt-1">{pendingPick.channel} · dale al play para escucharla antes</p>
+          )}
         </Modal>
       )}
       {blockedPick && (

@@ -43,7 +43,7 @@ declare global {
 }
 
 let apiPromise: Promise<NonNullable<Window['YT']>> | null = null
-function loadYouTubeApi() {
+export function loadYouTubeApi() {
   if (!apiPromise) {
     apiPromise = new Promise((resolve) => {
       if (window.YT?.Player) return resolve(window.YT)
