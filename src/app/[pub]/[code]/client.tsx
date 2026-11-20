@@ -76,6 +76,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
   const [pendingPick, setPendingPick] = useState<SearchResult | null>(null)
   const [pendingCancel, setPendingCancel] = useState<KaraokeRequest | null>(null)
   const [nameTaken, setNameTaken] = useState(false)
+  const [blockTerms, setBlockTerms] = useState<string[]>([])
   const [myVote, setMyVote] = useState(0)
   const msgTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const flash = (m: string) => {
@@ -102,7 +103,15 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
       localStorage.setItem('karaopub_device', dk)
     }
     setDeviceKey(dk)
+    supabase
+      .rpc('karaoke_block_terms', { p_code: code })
+      .then(({ data }) => setBlockTerms(data ?? []))
   }, [code])
+
+  const isBlocked = (r: SearchResult) => {
+    const hay = `${r.title} ${r.channel}`.toLowerCase()
+    return blockTerms.some((t) => hay.includes(t))
+  }
 
   const queue = requests.filter((r) => r.status === 'queued')
   const playing = requests.find((r) => r.status === 'playing') ?? null
@@ -341,27 +350,43 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
       {results.length > 0 && (
         <div className="space-y-2">
           <p className="text-xs font-bold tracking-widest text-zinc-400">ELIGE LA TUYA</p>
-          {results.map((r) => (
-            <button
-              key={r.videoId}
-              onClick={() => setPendingPick(r)}
-              className="flex w-full items-center gap-3 rounded-xl bg-zinc-900 p-2 text-left hover:bg-zinc-800"
-            >
-              {r.thumbnail && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={r.thumbnail} alt="" className="h-14 w-24 shrink-0 rounded-lg object-cover" />
-              )}
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium">{r.title}</p>
-                <p className="truncate text-xs text-zinc-400">
-                  {r.channel}
-                  {r.durationSeconds
-                    ? ` · ${Math.floor(r.durationSeconds / 60)}:${String(r.durationSeconds % 60).padStart(2, '0')}`
-                    : ''}
-                </p>
+          {results.map((r) =>
+            isBlocked(r) ? (
+              <div
+                key={r.videoId}
+                className="flex w-full items-center gap-3 rounded-xl bg-zinc-900/50 p-2 text-left opacity-60"
+              >
+                {r.thumbnail && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={r.thumbnail} alt="" className="h-14 w-24 shrink-0 rounded-lg object-cover grayscale" />
+                )}
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium">{r.title}</p>
+                  <p className="truncate text-xs text-red-300">🚫 Vetada por el pub</p>
+                </div>
               </div>
-            </button>
-          ))}
+            ) : (
+              <button
+                key={r.videoId}
+                onClick={() => setPendingPick(r)}
+                className="flex w-full items-center gap-3 rounded-xl bg-zinc-900 p-2 text-left hover:bg-zinc-800"
+              >
+                {r.thumbnail && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={r.thumbnail} alt="" className="h-14 w-24 shrink-0 rounded-lg object-cover" />
+                )}
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium">{r.title}</p>
+                  <p className="truncate text-xs text-zinc-400">
+                    {r.channel}
+                    {r.durationSeconds
+                      ? ` · ${Math.floor(r.durationSeconds / 60)}:${String(r.durationSeconds % 60).padStart(2, '0')}`
+                      : ''}
+                  </p>
+                </div>
+              </button>
+            ),
+          )}
         </div>
       )}
 
