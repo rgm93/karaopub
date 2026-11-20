@@ -24,6 +24,8 @@ export default function PubOwnerPage() {
   const [maxQueue, setMaxQueue] = useState(100)
   const [queueMode, setQueueMode] = useState<'fifo' | 'rotation'>('fifo')
   const [voting, setVoting] = useState(false)
+  const [blocks, setBlocks] = useState<{ id: string; term: string }[]>([])
+  const [blockTerm, setBlockTerm] = useState('')
 
   const load = useCallback(async () => {
     const { data: sess } = await supabase.auth.getSession()
@@ -43,6 +45,8 @@ export default function PubOwnerPage() {
     }
     const s = (data?.[0] ?? null) as MySession | null
     setSession(s)
+    const { data: bl } = await supabase.rpc('karaoke_blocks_list')
+    if (bl) setBlocks(bl as { id: string; term: string }[])
     if (s) {
       const { data: roomRow } = await supabase
         .from('karaoke_rooms')
@@ -320,6 +324,62 @@ export default function PubOwnerPage() {
           {saved ? '✓ Guardado' : 'Guardar ajustes'}
         </button>
       </form>
+
+      <section className="space-y-3 rounded-2xl bg-zinc-900 p-5">
+        <h2 className="font-bold">🚫 Canciones o artistas vetados</h2>
+        <p className="text-xs text-zinc-500">
+          Si el título o el canal del vídeo contiene alguno de estos términos, el cliente no podrá
+          pedirlo. Vale para todas las sesiones del pub.
+        </p>
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault()
+            const t = blockTerm.trim()
+            if (!t) return
+            const { error: err } = await supabase.rpc('karaoke_block_add', { p_term: t })
+            if (err) setError(err.message === 'too_short' ? 'Término demasiado corto.' : 'No se pudo vetar.')
+            else {
+              setBlockTerm('')
+              const { data: bl } = await supabase.rpc('karaoke_blocks_list')
+              if (bl) setBlocks(bl as { id: string; term: string }[])
+            }
+          }}
+          className="flex gap-2"
+        >
+          <input
+            value={blockTerm}
+            onChange={(e) => setBlockTerm(e.target.value)}
+            placeholder="p. ej. bad bunny, despacito…"
+            maxLength={80}
+            className="min-w-0 flex-1 rounded-xl bg-zinc-800 px-4 py-2 outline-none placeholder:text-zinc-600 focus:ring-2 focus:ring-amber-400"
+          />
+          <button
+            disabled={!blockTerm.trim()}
+            className="shrink-0 rounded-xl bg-red-500/80 px-4 py-2 font-bold hover:bg-red-500 disabled:opacity-40"
+          >
+            Vetar
+          </button>
+        </form>
+        {blocks.length === 0 ? (
+          <p className="text-xs text-zinc-600">Nada vetado por ahora.</p>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {blocks.map((b) => (
+              <button
+                key={b.id}
+                title="Quitar veto"
+                onClick={async () => {
+                  await supabase.rpc('karaoke_block_remove', { p_id: b.id })
+                  setBlocks((prev) => prev.filter((x) => x.id !== b.id))
+                }}
+                className="rounded-lg bg-red-500/15 px-3 py-1.5 text-sm text-red-200 hover:bg-red-500/30"
+              >
+                {b.term} ✕
+              </button>
+            ))}
+          </div>
+        )}
+      </section>
     </main>
   )
 }

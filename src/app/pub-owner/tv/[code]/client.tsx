@@ -418,7 +418,7 @@ export default function TvClient({ code }: { code: string }) {
 
       {/* ── Overlay: arranque (desbloquea el autoplay con sonido) ── */}
       {(!started || autoplayBlocked) && (
-        <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-zinc-950 text-center">
+        <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-zinc-950/85 text-center backdrop-blur-sm">
           <h1 className="text-4xl font-black sm:text-6xl">
             Karao<span className="text-amber-400">Pub</span>
           </h1>
@@ -438,7 +438,8 @@ export default function TvClient({ code }: { code: string }) {
             ▶ Empezar la noche
           </button>
           <p className="mt-6 max-w-md text-sm text-zinc-500">
-            Pulsa una vez para activar el sonido. A partir de ahí la cola y los vídeos avanzan solos.
+            Un toque para activar el sonido (los navegadores bloquean el audio automático).
+            Después la cola y los vídeos avanzan solos.
           </p>
         </div>
       )}

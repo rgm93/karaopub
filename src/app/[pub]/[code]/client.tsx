@@ -12,6 +12,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   queue_full: 'La cola está llena. Espera a que avance un poco.',
   session_closed: 'La sesión ha terminado. ¡Gracias por cantar!',
   duplicate_song: 'Esa canción ya está pedida o ya se ha cantado. ¡Elige otra! 🎵',
+  blocked: 'El pub tiene vetada esa canción o artista 🚫 ¡Elige otra!',
   not_found: 'No se pudo quitar. ¿Ya habrá empezado?',
 }
 
