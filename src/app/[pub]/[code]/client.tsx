@@ -219,11 +219,11 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
   if (!nameSet) {
     return (
       <main className="flex min-h-dvh flex-col items-center justify-center bg-zinc-950 p-6 text-zinc-100">
-        <form onSubmit={saveName} className="w-full max-w-sm space-y-4 text-center">
-          <h1 className="text-2xl font-black">
+        <form onSubmit={saveName} className="w-full max-w-sm space-y-5 text-center">
+          <h1 className="text-3xl font-black">
             Karao<span className="text-amber-400">Pub</span> · {room.name}
           </h1>
-          <p className="text-zinc-400">¿Cómo te llamamos cuando te toque cantar?</p>
+          <p className="text-lg text-zinc-400">¿Cómo te llamamos cuando te toque cantar?</p>
           <input
             value={name}
             onChange={(e) => {
@@ -233,10 +233,10 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
             placeholder="Tu nombre o apodo"
             maxLength={40}
             autoFocus
-            className="w-full rounded-xl bg-zinc-800 px-4 py-3 text-center text-lg outline-none placeholder:text-zinc-500 focus:ring-2 focus:ring-amber-400"
+            className="w-full rounded-xl bg-zinc-800 px-4 py-4 text-center text-xl outline-none placeholder:text-zinc-500 focus:ring-2 focus:ring-amber-400"
           />
           {nameTaken && (
-            <div className="rounded-xl bg-zinc-900 p-3 text-sm">
+            <div className="rounded-xl bg-zinc-900 p-4 text-base">
               <p className="text-amber-300">
                 Ya hay un(a) {name.trim()} en la cola. Elige un distintivo:
               </p>
@@ -249,7 +249,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
                       setName(s)
                       setNameTaken(false)
                     }}
-                    className="rounded-lg bg-zinc-800 px-3 py-1.5 font-bold hover:bg-zinc-700"
+                    className="rounded-lg bg-zinc-800 px-4 py-2 font-bold hover:bg-zinc-700"
                   >
                     {s}
                   </button>
@@ -259,7 +259,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
           )}
           <button
             disabled={!name.trim()}
-            className="w-full rounded-xl bg-amber-500 py-3 font-bold text-zinc-950 hover:bg-amber-400 disabled:opacity-40"
+            className="w-full rounded-xl bg-amber-500 py-4 text-lg font-bold text-zinc-950 hover:bg-amber-400 disabled:opacity-40"
           >
             Entrar
           </button>
