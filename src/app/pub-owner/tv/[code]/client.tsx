@@ -87,7 +87,7 @@ export default function TvClient({ code }: { code: string }) {
       alive = false
       supabase.removeChannel(ch)
     }
-  }, [current, room?.voting_enabled])
+  }, [current?.id, room?.voting_enabled])
   const guestUrl =
     room?.pub_id && typeof window !== 'undefined'
       ? `${window.location.origin}/${room.pub_id}/join?c=${code}`

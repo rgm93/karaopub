@@ -11,7 +11,6 @@ export default function CabinaClient({ code }: { code: string }) {
 
   const [hostKey, setHostKey] = useState<string | null>(null)
   const [tvUrl, setTvUrl] = useState('')
-  const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState('')
   const [pairCode, setPairCode] = useState<string | null>(null)
   const [ranking, setRanking] = useState<
@@ -38,7 +37,6 @@ export default function CabinaClient({ code }: { code: string }) {
   const rpc = useCallback(
     async (fn: string, extra: Record<string, unknown> = {}) => {
       if (!hostKey) return
-      setBusy(true)
       setMsg('')
       const { error } = await supabase.rpc(fn, {
         p_code: code,
@@ -46,7 +44,6 @@ export default function CabinaClient({ code }: { code: string }) {
         ...extra,
       })
       if (error) setMsg('Acción no permitida — ¿clave de sala correcta?')
-      setBusy(false)
     },
     [code, hostKey],
   )
@@ -142,7 +139,6 @@ export default function CabinaClient({ code }: { code: string }) {
                 <p className="truncate text-sm text-zinc-400">{current.title}</p>
               </div>
               <button
-                disabled={busy}
                 onClick={() => rpc('karaoke_finish_current', { p_outcome: 'skipped' })}
                 className="shrink-0 rounded-xl bg-red-500/80 px-4 py-2 font-bold hover:bg-red-500 disabled:opacity-40"
               >
@@ -151,28 +147,24 @@ export default function CabinaClient({ code }: { code: string }) {
             </div>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               <button
-                disabled={busy}
                 onClick={() => rpc('karaoke_player_cmd', { p_cmd: 'pause' })}
                 className="rounded-xl bg-zinc-800 py-2 text-sm font-bold hover:bg-zinc-700 disabled:opacity-40"
               >
                 ⏸ Pausar
               </button>
               <button
-                disabled={busy}
                 onClick={() => rpc('karaoke_player_cmd', { p_cmd: 'resume' })}
                 className="rounded-xl bg-zinc-800 py-2 text-sm font-bold hover:bg-zinc-700 disabled:opacity-40"
               >
                 ▶ Reanudar
               </button>
               <button
-                disabled={busy}
                 onClick={() => rpc('karaoke_player_cmd', { p_cmd: 'restart' })}
                 className="rounded-xl bg-zinc-800 py-2 text-sm font-bold hover:bg-zinc-700 disabled:opacity-40"
               >
                 ↺ De 0
               </button>
               <button
-                disabled={busy}
                 onClick={() => rpc('karaoke_player_cmd', { p_cmd: 'nearend' })}
                 title="Salta a 5 segundos del final (pruebas)"
                 className="rounded-xl bg-zinc-800 py-2 text-sm font-bold hover:bg-zinc-700 disabled:opacity-40"
@@ -191,21 +183,19 @@ export default function CabinaClient({ code }: { code: string }) {
       {/* Controles de sala */}
       <section className="grid grid-cols-2 gap-3">
         <button
-          disabled={busy}
           onClick={() => rpc('karaoke_start_next')}
           className="rounded-xl bg-amber-500 py-3 font-bold text-zinc-950 hover:bg-amber-400 disabled:opacity-40"
         >
           ▶ Siguiente ahora
         </button>
         <button
-          disabled={busy}
           onClick={() => rpc('karaoke_set_accepting', { p_value: !room.accepting_requests })}
           className="rounded-xl bg-zinc-800 py-3 font-bold hover:bg-zinc-700 disabled:opacity-40"
         >
           {room.accepting_requests ? '⏸ Pausar peticiones' : '▶ Reanudar peticiones'}
         </button>
         <button
-          disabled={busy || queue.length === 0}
+          disabled={queue.length === 0}
           onClick={() => {
             if (confirm('¿Vaciar toda la cola?')) rpc('karaoke_clear_queue')
           }}
@@ -225,7 +215,7 @@ export default function CabinaClient({ code }: { code: string }) {
             <li key={r.id} className="flex items-center gap-3 rounded-xl bg-zinc-900 p-3">
               <div className="flex w-8 flex-col">
                 <button
-                  disabled={busy || i === 0}
+                  disabled={i === 0}
                   onClick={() => rpc('karaoke_move', { p_request_id: r.id, p_dir: 'up' })}
                   title="Subir en la cola"
                   className="rounded-t-lg bg-zinc-800 px-2 py-1 text-xs leading-none hover:bg-zinc-700 disabled:opacity-30"
@@ -233,7 +223,7 @@ export default function CabinaClient({ code }: { code: string }) {
                   ▲
                 </button>
                 <button
-                  disabled={busy || i === queue.length - 1}
+                  disabled={i === queue.length - 1}
                   onClick={() => rpc('karaoke_move', { p_request_id: r.id, p_dir: 'down' })}
                   title="Bajar en la cola"
                   className="mt-0.5 rounded-b-lg bg-zinc-800 px-2 py-1 text-xs leading-none hover:bg-zinc-700 disabled:opacity-30"
@@ -250,7 +240,6 @@ export default function CabinaClient({ code }: { code: string }) {
                 <p className="truncate text-xs text-zinc-400">{r.title}</p>
               </div>
               <button
-                disabled={busy}
                 onClick={() => rpc('karaoke_play_now', { p_request_id: r.id })}
                 title="Reproducir ahora"
                 className="rounded-lg bg-zinc-800 px-3 py-2 hover:bg-zinc-700 disabled:opacity-40"
@@ -258,7 +247,6 @@ export default function CabinaClient({ code }: { code: string }) {
                 ▶
               </button>
               <button
-                disabled={busy}
                 onClick={() => rpc('karaoke_remove', { p_request_id: r.id })}
                 title="Quitar de la cola"
                 className="rounded-lg bg-zinc-800 px-3 py-2 text-red-300 hover:bg-zinc-700 disabled:opacity-40"
@@ -345,7 +333,6 @@ export default function CabinaClient({ code }: { code: string }) {
                   <p className="truncate text-xs text-zinc-500">{r.channel}</p>
                 </div>
                 <button
-                  disabled={busy}
                   onClick={() =>
                     supabase
                       .rpc('karaoke_bgm_add', {
@@ -373,7 +360,6 @@ export default function CabinaClient({ code }: { code: string }) {
         {bgm.length > 0 && (
           <>
             <button
-              disabled={busy}
               onClick={() => rpc('karaoke_bgm_set_shuffle', { p_value: !room.bgm_shuffle })}
               className="mt-3 w-full rounded-xl bg-zinc-800 py-2 text-sm font-bold hover:bg-zinc-700 disabled:opacity-40"
             >
@@ -416,7 +402,6 @@ export default function CabinaClient({ code }: { code: string }) {
                   </p>
                   {room.bgm_now_id === t.video_id ? (
                     <button
-                      disabled={busy}
                       onClick={() =>
                         rpc('karaoke_bgm_cmd', {
                           p_cmd: room.bgm_cmd === 'pause' ? 'resume' : 'pause',
@@ -429,7 +414,6 @@ export default function CabinaClient({ code }: { code: string }) {
                     </button>
                   ) : (
                     <button
-                      disabled={busy}
                       onClick={() => rpc('karaoke_bgm_play', { p_id: t.id })}
                       title="Sonar ahora"
                       className="shrink-0 rounded-lg bg-zinc-800 px-2.5 py-1 text-xs text-amber-300 hover:bg-zinc-700 disabled:opacity-40"
@@ -438,7 +422,6 @@ export default function CabinaClient({ code }: { code: string }) {
                     </button>
                   )}
                   <button
-                    disabled={busy}
                     onClick={() => rpc('karaoke_bgm_remove', { p_id: t.id })}
                     title="Quitar de la lista"
                     className="shrink-0 rounded-lg bg-zinc-800 px-2.5 py-1 text-xs text-red-300 hover:bg-zinc-700 disabled:opacity-40"
@@ -483,14 +466,11 @@ export default function CabinaClient({ code }: { code: string }) {
             </p>
           )}
           <button
-            disabled={busy}
             onClick={async () => {
-              setBusy(true)
               const { data, error } = await supabase.rpc('karaoke_pair_code', {
                 p_code: code,
                 p_host_key: hostKey,
               })
-              setBusy(false)
               if (error) setMsg('No se pudo generar el código de la tele.')
               else setPairCode(data as string)
             }}
