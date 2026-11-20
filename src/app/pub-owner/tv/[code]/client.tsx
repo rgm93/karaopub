@@ -322,25 +322,16 @@ export default function TvClient({ code }: { code: string }) {
       </div>
 
       {/* ── Interludio: la cola sigue visible con barra de progreso ── */}
-      {started && interludeActive && !current && (
+      {started && interludeActive && !current && nextUp && (
         <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black via-zinc-950/95 to-transparent px-6 pt-20 pb-6 text-center lg:px-12">
-          {nextUp ? (
-            <>
-              <p className="font-mono text-6xl font-black tabular-nums text-amber-400 lg:text-8xl">
-                {countdown}
-              </p>
-              <p className="mt-1 text-xs font-bold tracking-[0.4em] text-amber-400 lg:text-base">
-                SIGUIENTE TURNO
-              </p>
-              <p className="mt-2 text-3xl font-black lg:text-6xl">{nextUp.singer_name}</p>
-              <p className="mt-1 truncate text-lg text-zinc-400 lg:text-3xl">{nextUp.title}</p>
-            </>
-          ) : (
-            <p className="text-xl text-zinc-400 lg:text-3xl">
-              Cola vacía — ¡pide tu canción y serás el siguiente!
-            </p>
-          )}
-          {nextUp && (
+          <p className="font-mono text-6xl font-black tabular-nums text-amber-400 lg:text-8xl">
+            {countdown}
+          </p>
+          <p className="mt-1 text-xs font-bold tracking-[0.4em] text-amber-400 lg:text-base">
+            SIGUIENTE TURNO
+          </p>
+          <p className="mt-2 text-3xl font-black lg:text-6xl">{nextUp.singer_name}</p>
+          <p className="mt-1 truncate text-lg text-zinc-400 lg:text-3xl">{nextUp.title}</p>
           <div className="mx-auto mt-5 max-w-4xl lg:max-w-5xl">
             <div className="h-3 overflow-hidden rounded-full bg-zinc-800 lg:h-5">
               <div
@@ -357,7 +348,6 @@ export default function TvClient({ code }: { code: string }) {
               />
             </div>
           </div>
-          )}
         </div>
       )}
 
