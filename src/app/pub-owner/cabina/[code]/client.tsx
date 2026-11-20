@@ -117,7 +117,7 @@ export default function CabinaClient({ code }: { code: string }) {
       <header className="flex items-center justify-between">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-black">
-            <Logo className="h-7 w-auto" /> Cabina · {room.name}
+            <Logo className="h-5 w-auto" /> Cabina · {room.name}
           </h1>
           <p className="font-mono text-sm tracking-[0.3em] text-zinc-400">{code}</p>
         </div>

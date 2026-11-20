@@ -64,7 +64,7 @@ export default function JoinClient({ pubId }: { pubId: string }) {
     <main className="flex min-h-dvh flex-col items-center justify-center bg-zinc-950 p-6 text-zinc-100">
       <form onSubmit={submit} className="w-full max-w-sm space-y-5 text-center">
         <div>
-          <Logo className="mx-auto h-12 w-auto" />
+          <Logo className="mx-auto h-9 w-auto" />
           <h1 className="mt-2 text-3xl font-black">
             Karao<span className="text-amber-400">Pub</span>
           </h1>
