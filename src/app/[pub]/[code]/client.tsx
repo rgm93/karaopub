@@ -332,12 +332,24 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
       )}
 
       <form onSubmit={search} className="space-y-3 rounded-2xl bg-zinc-900 p-4">
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Canción, artista…"
-          className="w-full rounded-xl bg-zinc-800 px-4 py-3 outline-none placeholder:text-zinc-500 focus:ring-2 focus:ring-amber-400"
-        />
+        <div className="relative">
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Canción, artista…"
+            className="w-full rounded-xl bg-zinc-800 px-4 py-3 pr-10 outline-none placeholder:text-zinc-500 focus:ring-2 focus:ring-amber-400"
+          />
+          {query && (
+            <button
+              type="button"
+              onClick={() => setQuery('')}
+              aria-label="Limpiar búsqueda"
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-200"
+            >
+              ✕
+            </button>
+          )}
+        </div>
         <button
           disabled={searching || !query.trim() || !room.accepting_requests}
           className="w-full rounded-xl bg-amber-500 py-3 font-bold text-zinc-950 hover:bg-amber-400 disabled:opacity-40"
@@ -353,7 +365,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
 
       {searching && <p className="text-center text-zinc-400">Buscando en YouTube…</p>}
       {!searching && searched && results.length === 0 && (
-        <p className="text-center text-zinc-400">Sin resultados. Prueba a añadir el artista.</p>
+        <p className="text-center text-zinc-400">Sin resultados. Prueba con otra canción o artista.</p>
       )}
 
       {results.length > 0 && (
@@ -383,24 +395,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
         </div>
       )}
 
-      <section className="pb-8">
-        {room.bgm_now && room.bgm_now_id && (
-          <button
-            onClick={() =>
-              setPreviewReq({
-                video_id: room.bgm_now_id!,
-                title: room.bgm_now!,
-                heading: '🎵 Suena de fondo ahora',
-              })
-            }
-            className="mb-3 flex w-full items-center gap-2 rounded-lg bg-zinc-900 px-3 py-2 text-left hover:bg-zinc-800"
-          >
-            <span className="text-sm">🎵</span>
-            <p className="min-w-0 flex-1 truncate text-xs text-zinc-400">
-              <span className="font-semibold text-zinc-300">Suena de fondo:</span> {room.bgm_now}
-            </p>
-          </button>
-        )}
+      <section className={room.bgm_now && room.bgm_now_id ? 'pb-20' : 'pb-8'}>
         {queue.length > 0 && (
           <p className="mb-2 text-xs font-bold tracking-widest text-zinc-400">Cola</p>
         )}
@@ -523,6 +518,28 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
           <p className="font-bold text-zinc-200">{previewReq.title}</p>
           <p className="mt-1">Dale al play para escucharla, o ábrela en YouTube.</p>
         </Modal>
+      )}
+      {room.bgm_now && room.bgm_now_id && (
+        <div className="fixed inset-x-0 bottom-0 z-10 border-t border-zinc-800 bg-zinc-950/95 backdrop-blur">
+          <button
+            onClick={() =>
+              setPreviewReq({
+                video_id: room.bgm_now_id!,
+                title: room.bgm_now!,
+                heading: '🎵 Suena de fondo ahora',
+              })
+            }
+            className="mx-auto flex w-full max-w-md items-center gap-3 px-5 py-3 text-left sm:max-w-lg"
+          >
+            <span className="text-base">🎵</span>
+            <p className="min-w-0 flex-1 truncate text-xs text-zinc-400">
+              <span className="font-semibold text-zinc-300">Suena de fondo</span> · {room.bgm_now}
+            </p>
+            <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+              Ver
+            </span>
+          </button>
+        </div>
       )}
     </main>
   )
