@@ -20,15 +20,15 @@ export function YtPreview({
 
   useEffect(() => {
     let mounted = true
-    let player: { destroy: () => void } | null = null
+    let player: { destroy: () => void; cueVideoById: (id: string) => void } | null = null
     loadYouTubeApi().then((YT) => {
       if (!mounted || !containerRef.current) return
       player = new YT.Player(containerRef.current, {
         width: '100%',
         height: '100%',
-        videoId,
         playerVars: { rel: 0, controls: 1, modestbranding: 1, iv_load_policy: 3 },
         events: {
+          onReady: () => player?.cueVideoById(videoId),
           onError: (e) => cbRef.current.onError(e.data),
           // El vídeo carga bien cuando pasa a CUED (5), BUFFERING (3), PLAYING (1) o PAUSED (2)
           onStateChange: (e) => {
