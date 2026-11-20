@@ -117,6 +117,12 @@ export default function CabinaClient({ code }: { code: string }) {
           <h1 className="text-2xl font-black">🎛️ Cabina · {room.name}</h1>
           <p className="font-mono text-sm tracking-[0.3em] text-zinc-400">{code}</p>
         </div>
+        <a
+          href="/pub-owner"
+          className="shrink-0 rounded-xl bg-zinc-800 px-4 py-2 text-sm font-bold hover:bg-zinc-700"
+        >
+          ← Panel
+        </a>
       </header>
 
       {msg && <p className="rounded-xl bg-red-500/20 p-3 text-sm text-red-300">{msg}</p>}
