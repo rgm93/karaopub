@@ -79,6 +79,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
   const [deviceKey, setDeviceKey] = useState<string | null>(null)
   const [pendingPick, setPendingPick] = useState<SearchResult | null>(null)
   const [pickStatus, setPickStatus] = useState<'loading' | 'ok' | 'error'>('loading')
+  const [notifPerm, setNotifPerm] = useState<NotificationPermission | 'unsupported'>('default')
   const [blockedPick, setBlockedPick] = useState<SearchResult | null>(null)
   const [pendingCancel, setPendingCancel] = useState<KaraokeRequest | null>(null)
   const [nameTaken, setNameTaken] = useState(false)
@@ -102,6 +103,8 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
   }, [pendingPick])
 
   useEffect(() => {
+    if (!('Notification' in window)) setNotifPerm('unsupported')
+    else setNotifPerm(Notification.permission)
     const n = localStorage.getItem('karaopub_name')
     if (n) {
       setName(n)
@@ -128,16 +131,26 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
   const playing = requests.find((r) => r.status === 'playing') ?? null
   const imNext = queue.length > 0 && myIds.includes(queue[0].id)
 
-  // Aviso "¡te toca!": vibra una vez al convertirte en el siguiente
+  // Aviso "¡te toca!": banner + vibración + notificación del navegador
   const warnedNext = useRef(false)
   useEffect(() => {
     if (imNext && !warnedNext.current) {
       warnedNext.current = true
       navigator.vibrate?.([250, 120, 250])
+      if (notifPerm === 'granted') {
+        try {
+          new Notification('🎤 ¡Te toca!', {
+            body: `Prepárate: ${queue[0].title}`,
+            tag: 'karaopub-turn',
+          })
+        } catch {
+          // algunos navegadores solo permiten notificaciones vía SW
+        }
+      }
     } else if (!imNext) {
       warnedNext.current = false
     }
-  }, [imNext])
+  }, [imNext, notifPerm, queue])
 
   const saveName = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -319,6 +332,25 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
           Karao<span className="text-amber-400">Pub</span> · {room.name}
         </h1>
         <p className="text-sm text-zinc-400">Hola, {name} 👋</p>
+        {notifPerm === 'default' && (
+          <button
+            onClick={async () => {
+              try {
+                setNotifPerm(await Notification.requestPermission())
+              } catch {
+                setNotifPerm('unsupported')
+              }
+            }}
+            className="mt-2 rounded-full bg-zinc-800 px-3 py-1 text-xs font-bold text-zinc-300 hover:bg-zinc-700"
+          >
+            🔔 Avisarme cuando me toque
+          </button>
+        )}
+        {notifPerm === 'denied' && (
+          <p className="mt-2 text-xs text-zinc-600">
+            Avisos desactivados en el navegador
+          </p>
+        )}
         {room.bgm_now && !room.bgm_now_id && (
           <p className="mt-2 truncate rounded-lg bg-zinc-900 px-3 py-1.5 text-sm text-zinc-400">
             🎵 Suena de fondo: {room.bgm_now}

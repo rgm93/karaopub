@@ -16,6 +16,7 @@ export const metadata: Metadata = {
   title: "KaraoPub — El karaoke de tu bar",
   description:
     "Los clientes piden su canción desde el móvil y la tele del bar las va cantando por turnos.",
+  manifest: "/manifest.webmanifest",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
