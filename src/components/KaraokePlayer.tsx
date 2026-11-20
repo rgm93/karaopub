@@ -1,6 +1,11 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
+
+type YTPlayer = {
+  loadVideoById: (id: string) => void
+  destroy: () => void
+}
 
 declare global {
   interface Window {
@@ -12,12 +17,14 @@ declare global {
           height?: string
           videoId?: string
           playerVars?: Record<string, number | string>
-          events?: Record<string, (e: { data: number }) => void>
+          events?: {
+            onReady?: () => void
+            onStateChange?: (e: { data: number }) => void
+            onError?: (e: { data: number }) => void
+            onAutoplayBlocked?: () => void
+          }
         },
-      ) => {
-        loadVideoById: (id: string) => void
-        destroy: () => void
-      }
+      ) => YTPlayer
       PlayerState: { ENDED: number }
     }
     onYouTubeIframeAPIReady?: () => void
@@ -51,7 +58,8 @@ type Props = {
 
 export function KaraokePlayer({ videoId, onEnded, onError, onAutoplayBlocked }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const playerRef = useRef<{ loadVideoById: (id: string) => void } | null>(null)
+  const playerRef = useRef<YTPlayer | null>(null)
+  const [ready, setReady] = useState(false)
   const cbRef = useRef({ onEnded, onError, onAutoplayBlocked })
   cbRef.current = { onEnded, onError, onAutoplayBlocked }
 
@@ -69,8 +77,12 @@ export function KaraokePlayer({ videoId, onEnded, onError, onAutoplayBlocked }: 
           modestbranding: 1,
           iv_load_policy: 3,
           disablekb: 1,
+          fs: 0,
         },
         events: {
+          onReady: () => {
+            if (mounted) setReady(true)
+          },
           onStateChange: (e) => {
             if (e.data === YT.PlayerState.ENDED) cbRef.current.onEnded()
           },
@@ -81,14 +93,18 @@ export function KaraokePlayer({ videoId, onEnded, onError, onAutoplayBlocked }: 
     })
     return () => {
       mounted = false
+      playerRef.current?.destroy()
+      playerRef.current = null
+      setReady(false)
     }
   }, [])
 
+  // Carga el vídeo solo cuando el player ha disparado onReady
   useEffect(() => {
-    if (videoId && playerRef.current) {
+    if (ready && videoId && playerRef.current) {
       playerRef.current.loadVideoById(videoId)
     }
-  }, [videoId])
+  }, [ready, videoId])
 
   return <div ref={containerRef} className="h-full w-full" />
 }

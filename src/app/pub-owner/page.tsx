@@ -17,6 +17,7 @@ export default function PubOwnerPage() {
   const [origin, setOrigin] = useState('')
   const [busy, setBusy] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [pairCode, setPairCode] = useState<string | null>(null)
 
   const [maxSongs, setMaxSongs] = useState(5)
   const [interlude, setInterlude] = useState(60)
@@ -81,6 +82,16 @@ export default function PubOwnerPage() {
     })
     await load()
     setBusy(false)
+  }
+
+  const pairTv = async () => {
+    if (!session) return
+    const { data, error: err } = await supabase.rpc('karaoke_pair_code', {
+      p_code: session.code,
+      p_host_key: session.host_key,
+    })
+    if (err) setError('No se pudo generar el código de la tele.')
+    else setPairCode(data as string)
   }
 
   const saveSettings = async (e: React.FormEvent) => {
@@ -185,18 +196,37 @@ export default function PubOwnerPage() {
           <p className="mt-1 font-mono text-xs break-all text-zinc-400">{joinUrl}</p>
         </div>
         <div className="space-y-2">
-          <a
-            href={tvUrl}
-            className="block rounded-xl bg-amber-500 px-4 py-3 text-center font-bold text-zinc-950 hover:bg-amber-400"
+          <button
+            onClick={pairTv}
+            className="w-full rounded-xl bg-amber-500 px-4 py-3 font-bold text-zinc-950 hover:bg-amber-400"
           >
-            📺 Abrir TV
-          </a>
+            📺 Emparejar tele
+          </button>
+          {pairCode && (
+            <div className="rounded-xl bg-zinc-800 p-3 text-center">
+              <p className="text-xs text-zinc-400">
+                En la tele entra en{' '}
+                <span className="font-mono text-zinc-200">karaopub.vercel.app/pub-owner/tv</span>{' '}
+                y escribe:
+              </p>
+              <p className="my-1 font-mono text-3xl font-black tracking-[0.4em] text-amber-400">
+                {pairCode}
+              </p>
+              <p className="text-xs text-zinc-500">Caduca en 15 min · puedes generar otro</p>
+            </div>
+          )}
           <a
             href={cabinaUrl}
             className="block rounded-xl bg-zinc-800 px-4 py-3 text-center font-bold hover:bg-zinc-700"
           >
             🎛️ Abrir cabina
           </a>
+          <button
+            onClick={() => navigator.clipboard.writeText(tvUrl)}
+            className="w-full rounded-xl bg-zinc-800 px-4 py-2 text-sm hover:bg-zinc-700"
+          >
+            Copiar enlace directo de la TV
+          </button>
           <button
             onClick={() => navigator.clipboard.writeText(joinUrl)}
             className="w-full rounded-xl bg-zinc-800 px-4 py-2 text-sm hover:bg-zinc-700"

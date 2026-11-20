@@ -12,6 +12,7 @@ export default function CabinaClient({ code }: { code: string }) {
   const [tvUrl, setTvUrl] = useState('')
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState('')
+  const [pairCode, setPairCode] = useState<string | null>(null)
 
   useEffect(() => {
     const k =
@@ -178,13 +179,44 @@ export default function CabinaClient({ code }: { code: string }) {
         </div>
         <div className="rounded-2xl bg-zinc-900 p-4 text-center">
           <p className="text-xs font-bold tracking-widest text-zinc-500">PANTALLA TV</p>
-          <p className="mt-2 font-mono text-xs break-all text-zinc-400">{tvUrl}</p>
-          <a
-            href={tvUrl}
-            className="mt-3 block rounded-xl bg-amber-500 py-2 font-bold text-zinc-950 hover:bg-amber-400"
+          {pairCode ? (
+            <>
+              <p className="mt-2 text-xs text-zinc-400">
+                En la tele entra en{' '}
+                <span className="font-mono text-zinc-200">…/pub-owner/tv</span> y escribe:
+              </p>
+              <p className="my-1 font-mono text-3xl font-black tracking-[0.4em] text-amber-400">
+                {pairCode}
+              </p>
+              <p className="text-xs text-zinc-500">Caduca en 15 min</p>
+            </>
+          ) : (
+            <p className="mt-2 text-xs text-zinc-400">
+              Genera un código para conectar la tele sin escribir la URL larga
+            </p>
+          )}
+          <button
+            disabled={busy}
+            onClick={async () => {
+              setBusy(true)
+              const { data, error } = await supabase.rpc('karaoke_pair_code', {
+                p_code: code,
+                p_host_key: hostKey,
+              })
+              setBusy(false)
+              if (error) setMsg('No se pudo generar el código de la tele.')
+              else setPairCode(data as string)
+            }}
+            className="mt-3 w-full rounded-xl bg-amber-500 py-2 font-bold text-zinc-950 hover:bg-amber-400 disabled:opacity-40"
           >
-            Abrir TV
-          </a>
+            📺 Emparejar tele
+          </button>
+          <button
+            onClick={() => navigator.clipboard.writeText(tvUrl)}
+            className="mt-2 w-full rounded-xl bg-zinc-800 py-2 text-sm hover:bg-zinc-700"
+          >
+            Copiar enlace directo
+          </button>
         </div>
       </section>
     </main>

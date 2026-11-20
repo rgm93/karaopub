@@ -15,7 +15,7 @@ const ERROR_MESSAGES: Record<string, string> = {
 
 export default function SalaClient({ pubId, code }: { pubId: string; code: string }) {
   const { room, requests, loading, notFound } = useRoom(code)
-  const wrongPub = room !== null && room.pub_id !== pubId
+  const wrongPub = room !== null && room.pub_id !== null && room.pub_id !== pubId
 
   const [name, setName] = useState('')
   const [nameSet, setNameSet] = useState(false)
