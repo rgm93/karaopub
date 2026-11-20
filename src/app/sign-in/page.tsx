@@ -33,11 +33,11 @@ export default function SignInPage() {
   }
 
   if (checking) {
-    return <main className="flex min-h-screen items-center justify-center bg-zinc-950 text-zinc-400">…</main>
+    return <main className="flex min-h-dvh items-center justify-center bg-zinc-950 text-zinc-400">…</main>
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-zinc-950 p-6 text-zinc-100">
+    <main className="flex min-h-dvh flex-col items-center justify-center bg-zinc-950 p-6 text-zinc-100">
       <form onSubmit={login} className="w-full max-w-sm space-y-4">
         <div className="text-center">
           <h1 className="text-3xl font-black">

@@ -111,11 +111,11 @@ export default function PubOwnerPage() {
   }
 
   if (loading) {
-    return <main className="flex min-h-screen items-center justify-center bg-zinc-950 text-zinc-400">Cargando…</main>
+    return <main className="flex min-h-dvh items-center justify-center bg-zinc-950 text-zinc-400">Cargando…</main>
   }
   if (error) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-zinc-950 p-6 text-center text-zinc-100">
+      <main className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-zinc-950 p-6 text-center text-zinc-100">
         <p className="max-w-sm text-red-300">{error}</p>
         <button
           onClick={async () => {
@@ -133,7 +133,7 @@ export default function PubOwnerPage() {
   // ── Sin sesión activa: pantalla de "nueva sesión" ──
   if (!session) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center gap-6 bg-zinc-950 p-6 text-center text-zinc-100">
+      <main className="flex min-h-dvh flex-col items-center justify-center gap-6 bg-zinc-950 p-6 text-center text-zinc-100">
         <div>
           <h1 className="text-3xl font-black">
             Karao<span className="text-amber-400">Pub</span>
@@ -165,7 +165,7 @@ export default function PubOwnerPage() {
   const cabinaUrl = `${origin}/pub-owner/cabina/${session.code}?k=${session.host_key}`
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-6 bg-zinc-950 p-5 text-zinc-100">
+    <main className="mx-auto flex min-h-dvh max-w-2xl flex-col gap-6 bg-zinc-950 p-5 text-zinc-100">
       <header className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-black">Karaoke · {session.pub_name}</h1>

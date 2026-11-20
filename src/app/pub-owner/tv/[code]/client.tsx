@@ -13,6 +13,7 @@ export default function TvClient({ code }: { code: string }) {
   const [started, setStarted] = useState(false)
   const [autoplayBlocked, setAutoplayBlocked] = useState(false)
   const [now, setNow] = useState(Date.now())
+  const [doneId, setDoneId] = useState<string | null>(null)
   const nextLock = useRef(false)
   const lastFinished = useRef<string | null>(null)
 
@@ -72,24 +73,32 @@ export default function TvClient({ code }: { code: string }) {
     (outcome: 'done' | 'skipped' | 'error') => {
       if (!current || lastFinished.current === current.id) return
       lastFinished.current = current.id
-      rpc('karaoke_finish_current', { p_outcome: outcome })
+      // Oculta el vídeo al instante aunque la respuesta de la BD se retrase
+      setDoneId(current.id)
+      const send = () => rpc('karaoke_finish_current', { p_outcome: outcome })
+      send().then((res) => {
+        if (res?.error) {
+          console.error('finish_current falló, reintentando…', res.error)
+          setTimeout(send, 1500)
+        }
+      })
     },
     [current, rpc],
   )
 
   if (loading) {
-    return <main className="flex min-h-screen items-center justify-center bg-zinc-950 text-zinc-400">Cargando…</main>
+    return <main className="flex min-h-dvh items-center justify-center bg-zinc-950 text-zinc-400">Cargando…</main>
   }
   if (notFound || !room) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-zinc-950 text-zinc-100">
+      <main className="flex min-h-dvh items-center justify-center bg-zinc-950 text-zinc-100">
         <h1 className="text-2xl font-bold">La sala {code} no existe</h1>
       </main>
     )
   }
 
   return (
-    <main className="relative flex h-screen flex-col overflow-hidden bg-zinc-950 text-zinc-100">
+    <main className="relative flex h-dvh flex-col overflow-hidden bg-zinc-950 text-zinc-100">
       {/* ── Cabecera ── */}
       <header className="flex items-center justify-between px-4 py-3 lg:px-8 lg:py-4">
         <h1 className="text-xl font-black lg:text-3xl">
@@ -186,7 +195,7 @@ export default function TvClient({ code }: { code: string }) {
       )}
 
       {/* ── Overlay: reproduciendo ── */}
-      {started && current && (
+      {started && current && doneId !== current.id && (
         <div className="absolute inset-0 z-30 bg-black">
           <KaraokePlayer
             videoId={current.video_id}
@@ -205,6 +214,13 @@ export default function TvClient({ code }: { code: string }) {
             )}
           </div>
         </div>
+      )}
+
+      {/* ── Aviso: sin clave la TV no puede avanzar sola ── */}
+      {started && !hostKey && (
+        <p className="absolute right-0 bottom-0 left-0 z-50 bg-red-600/90 px-4 py-2 text-center text-sm font-bold">
+          Sin clave de control — empareja la tele desde el panel del pub o abre el enlace con ?k=
+        </p>
       )}
 
       {/* ── Overlay: arranque (desbloquea el autoplay con sonido) ── */}

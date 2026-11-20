@@ -53,14 +53,14 @@ export default function JoinClient({ pubId }: { pubId: string }) {
 
   if (badPub) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-zinc-950 p-6 text-center text-zinc-100">
+      <main className="flex min-h-dvh items-center justify-center bg-zinc-950 p-6 text-center text-zinc-100">
         <h1 className="text-xl font-bold">Este local no existe</h1>
       </main>
     )
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-zinc-950 p-6 text-zinc-100">
+    <main className="flex min-h-dvh flex-col items-center justify-center bg-zinc-950 p-6 text-zinc-100">
       <form onSubmit={submit} className="w-full max-w-sm space-y-5 text-center">
         <div>
           <h1 className="text-3xl font-black">

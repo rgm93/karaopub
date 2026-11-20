@@ -42,18 +42,18 @@ export default function CabinaClient({ code }: { code: string }) {
   )
 
   if (loading) {
-    return <main className="flex min-h-screen items-center justify-center bg-zinc-950 text-zinc-400">Cargando…</main>
+    return <main className="flex min-h-dvh items-center justify-center bg-zinc-950 text-zinc-400">Cargando…</main>
   }
   if (notFound || !room) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-zinc-950 text-zinc-100">
+      <main className="flex min-h-dvh items-center justify-center bg-zinc-950 text-zinc-100">
         <h1 className="text-2xl font-bold">La sala {code} no existe</h1>
       </main>
     )
   }
   if (!hostKey) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center gap-3 bg-zinc-950 p-6 text-center text-zinc-100">
+      <main className="flex min-h-dvh flex-col items-center justify-center gap-3 bg-zinc-950 p-6 text-center text-zinc-100">
         <h1 className="text-2xl font-bold">Cabina de {room.name}</h1>
         <p className="max-w-sm text-sm text-zinc-400">
           Necesitas el enlace completo con la clave de la sala (el que se generó al crearla).
@@ -70,7 +70,7 @@ export default function CabinaClient({ code }: { code: string }) {
       : ''
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-5 bg-zinc-950 p-5 text-zinc-100">
+    <main className="mx-auto flex min-h-dvh max-w-2xl flex-col gap-5 bg-zinc-950 p-5 text-zinc-100">
       <header className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-black">🎛️ Cabina · {room.name}</h1>

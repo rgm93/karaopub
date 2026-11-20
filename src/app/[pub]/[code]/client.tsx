@@ -83,11 +83,11 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
   }
 
   if (loading) {
-    return <main className="flex min-h-screen items-center justify-center bg-zinc-950 text-zinc-400">Cargando sala…</main>
+    return <main className="flex min-h-dvh items-center justify-center bg-zinc-950 text-zinc-400">Cargando sala…</main>
   }
   if (notFound || !room || wrongPub) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center gap-3 bg-zinc-950 p-6 text-center text-zinc-100">
+      <main className="flex min-h-dvh flex-col items-center justify-center gap-3 bg-zinc-950 p-6 text-center text-zinc-100">
         <p className="text-4xl">🎤</p>
         <h1 className="text-xl font-bold">La sala {code} no existe</h1>
         <p className="text-sm text-zinc-400">Revisa el código o escanea el QR de nuevo.</p>
@@ -96,7 +96,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
   }
   if (!room.is_active) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center gap-3 bg-zinc-950 p-6 text-center text-zinc-100">
+      <main className="flex min-h-dvh flex-col items-center justify-center gap-3 bg-zinc-950 p-6 text-center text-zinc-100">
         <p className="text-4xl">🎤</p>
         <h1 className="text-xl font-bold">La sesión ha terminado</h1>
         <p className="text-sm text-zinc-400">¡Gracias por cantar! Hasta la próxima.</p>
@@ -106,7 +106,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
 
   if (!nameSet) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center bg-zinc-950 p-6 text-zinc-100">
+      <main className="flex min-h-dvh flex-col items-center justify-center bg-zinc-950 p-6 text-zinc-100">
         <form onSubmit={saveName} className="w-full max-w-sm space-y-4 text-center">
           <h1 className="text-2xl font-black">
             Karao<span className="text-amber-400">Pub</span> · {room.name}
@@ -132,7 +132,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col gap-5 bg-zinc-950 p-5 text-zinc-100">
+    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-5 bg-zinc-950 p-5 text-zinc-100 sm:max-w-lg">
       <header className="text-center">
         <h1 className="text-xl font-black">
           Karao<span className="text-amber-400">Pub</span> · {room.name}
