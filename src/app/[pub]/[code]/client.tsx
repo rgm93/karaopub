@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRoom } from '@/lib/useRoom'
 import type { KaraokeRequest, SearchResult } from '@/lib/types'
@@ -75,6 +75,12 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
   const [pendingCancel, setPendingCancel] = useState<KaraokeRequest | null>(null)
   const [nameTaken, setNameTaken] = useState(false)
   const [myVote, setMyVote] = useState(0)
+  const msgTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const flash = (m: string) => {
+    setMsg(m)
+    if (msgTimer.current) clearTimeout(msgTimer.current)
+    msgTimer.current = setTimeout(() => setMsg(''), 4000)
+  }
   const [previewReq, setPreviewReq] = useState<{
     video_id: string
     title: string
@@ -167,7 +173,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
     setResults([])
     setQuery('')
     setSearched(false)
-    setMsg(`¡Apuntada! «${r.title}»`)
+    flash(`¡Apuntada! «${r.title}»`)
   }
 
   const cancelMine = async (r: KaraokeRequest) => {
@@ -185,7 +191,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
     const ids = myIds.filter((id) => id !== r.id)
     setMyIds(ids)
     localStorage.setItem(`karaopub_my_${code}`, JSON.stringify(ids))
-    setMsg('Canción quitada de la cola.')
+    flash('Canción quitada de la cola.')
   }
 
   if (loading) {
