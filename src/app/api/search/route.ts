@@ -115,6 +115,32 @@ async function searchDataApi(query: string): Promise<SearchResult[]> {
   }))
 }
 
+// Quita los vídeos que YouTube no permite embeber — la tele no podría reproducirlos
+async function filterEmbeddable(results: SearchResult[]): Promise<SearchResult[]> {
+  if (!results.length) return results
+  try {
+    const yt = await getTube()
+    const checked = await Promise.all(
+      results.map(async (r) => {
+        try {
+          const info = await yt.getBasicInfo(r.videoId)
+          const ps = info.playability_status as
+            | { status?: string; embeddable?: boolean; playable_in_embed?: boolean }
+            | undefined
+          if (ps?.embeddable === false || ps?.playable_in_embed === false) return null
+          if (ps?.status && ps.status !== 'OK') return null
+          return r
+        } catch {
+          return r // si no se puede comprobar, no lo descartamos
+        }
+      }),
+    )
+    return checked.filter((r): r is SearchResult => r !== null)
+  } catch {
+    return results
+  }
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const q = searchParams.get('q')?.trim()
@@ -144,6 +170,8 @@ export async function GET(request: Request) {
       // agotado
     }
   }
+
+  results = await filterEmbeddable(results)
 
   return Response.json({ results, source })
 }

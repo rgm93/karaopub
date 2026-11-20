@@ -384,9 +384,6 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
       )}
 
       <section className="pb-8">
-        {queue.length > 0 && (
-          <p className="mb-2 text-xs font-bold tracking-widest text-zinc-400">Cola</p>
-        )}
         {room.bgm_now && room.bgm_now_id && (
           <button
             onClick={() =>
@@ -396,14 +393,16 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
                 heading: '🎵 Suena de fondo ahora',
               })
             }
-            className="mb-3 flex w-full items-center gap-3 rounded-xl bg-zinc-800/60 p-3 text-left ring-1 ring-zinc-700/50 hover:bg-zinc-800"
+            className="mb-3 flex w-full items-center gap-2 rounded-lg bg-zinc-900 px-3 py-2 text-left hover:bg-zinc-800"
           >
-            <span className="w-6 text-center text-lg">🎵</span>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-base font-bold text-zinc-200">Suena de fondo</p>
-              <p className="line-clamp-2 text-sm text-zinc-400">{room.bgm_now}</p>
-            </div>
+            <span className="text-sm">🎵</span>
+            <p className="min-w-0 flex-1 truncate text-xs text-zinc-400">
+              <span className="font-semibold text-zinc-300">Suena de fondo:</span> {room.bgm_now}
+            </p>
           </button>
+        )}
+        {queue.length > 0 && (
+          <p className="mb-2 text-xs font-bold tracking-widest text-zinc-400">Cola</p>
         )}
         {queue.length === 0 && !playing && (
           <div className="py-8 text-center">
