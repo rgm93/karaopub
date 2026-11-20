@@ -78,7 +78,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
   const [myIds, setMyIds] = useState<string[]>([])
   const [deviceKey, setDeviceKey] = useState<string | null>(null)
   const [pendingPick, setPendingPick] = useState<SearchResult | null>(null)
-  const [pickError, setPickError] = useState(false)
+  const [pickStatus, setPickStatus] = useState<'loading' | 'ok' | 'error'>('loading')
   const [blockedPick, setBlockedPick] = useState<SearchResult | null>(null)
   const [pendingCancel, setPendingCancel] = useState<KaraokeRequest | null>(null)
   const [nameTaken, setNameTaken] = useState(false)
@@ -96,9 +96,9 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
     heading: string
   } | null>(null)
 
-  // Resetea el estado de error del preview cada vez que se abre el modal
+  // Resetea el estado del preview cada vez que se abre el modal
   useEffect(() => {
-    if (pendingPick) setPickError(false)
+    if (pendingPick) setPickStatus('loading')
   }, [pendingPick])
 
   useEffect(() => {
@@ -458,19 +458,34 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
       {pendingPick && (
         <Modal
           title="¿Apuntar esta canción?"
-          confirmLabel="🎤 ¡A cantar!"
-          confirmDisabled={pickError}
+          confirmLabel={
+            pickStatus === 'loading' ? (
+              <span className="inline-flex items-center gap-1.5">
+                {[0, 1, 2].map((i) => (
+                  <span
+                    key={i}
+                    className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-950"
+                    style={{ animationDelay: `${i * 150}ms` }}
+                  />
+                ))}
+              </span>
+            ) : (
+              '🎤 ¡A cantar!'
+            )
+          }
+          confirmDisabled={pickStatus !== 'ok'}
           onConfirm={() => pick(pendingPick)}
           onClose={() => setPendingPick(null)}
         >
           <div className="mb-3 overflow-hidden rounded-xl">
             <YtPreview
               videoId={pendingPick.videoId}
-              onError={() => setPickError(true)}
+              onError={() => setPickStatus('error')}
+              onOk={() => setPickStatus('ok')}
             />
           </div>
           <p className="font-bold text-zinc-200">{pendingPick.title}</p>
-          {pickError ? (
+          {pickStatus === 'error' ? (
             <p className="mt-1 text-red-300">
               Este vídeo no se puede reproducir fuera de YouTube — la tele no podría ponerlo. Elige
               otro resultado.

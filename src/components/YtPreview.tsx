@@ -8,13 +8,15 @@ import { loadYouTubeApi } from './KaraokePlayer'
 export function YtPreview({
   videoId,
   onError,
+  onOk,
 }: {
   videoId: string
   onError: (code: number) => void
+  onOk?: () => void
 }) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const cbRef = useRef(onError)
-  cbRef.current = onError
+  const cbRef = useRef({ onError, onOk })
+  cbRef.current = { onError, onOk }
 
   useEffect(() => {
     let mounted = true
@@ -26,7 +28,13 @@ export function YtPreview({
         height: '100%',
         videoId,
         playerVars: { rel: 0, controls: 1, modestbranding: 1, iv_load_policy: 3 },
-        events: { onError: (e) => cbRef.current(e.data) },
+        events: {
+          onError: (e) => cbRef.current.onError(e.data),
+          // El vídeo carga bien cuando pasa a CUED (5), BUFFERING (3), PLAYING (1) o PAUSED (2)
+          onStateChange: (e) => {
+            if ([1, 2, 3, 5].includes(e.data)) cbRef.current.onOk?.()
+          },
+        },
       })
     })
     return () => {
