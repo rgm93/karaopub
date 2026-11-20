@@ -326,7 +326,10 @@ export default function TvClient({ code }: { code: string }) {
         <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black via-zinc-950/95 to-transparent px-6 pt-20 pb-6 text-center lg:px-12">
           {nextUp ? (
             <>
-              <p className="text-xs font-bold tracking-[0.4em] text-amber-400 lg:text-base">
+              <p className="font-mono text-6xl font-black tabular-nums text-amber-400 lg:text-8xl">
+                {countdown}
+              </p>
+              <p className="mt-1 text-xs font-bold tracking-[0.4em] text-amber-400 lg:text-base">
                 SIGUIENTE TURNO
               </p>
               <p className="mt-2 text-3xl font-black lg:text-6xl">{nextUp.singer_name}</p>
@@ -338,8 +341,8 @@ export default function TvClient({ code }: { code: string }) {
             </p>
           )}
           {nextUp && (
-          <div className="mx-auto mt-5 flex max-w-4xl items-center gap-4 lg:max-w-5xl">
-            <div className="h-3 flex-1 overflow-hidden rounded-full bg-zinc-800 lg:h-5">
+          <div className="mx-auto mt-5 max-w-4xl lg:max-w-5xl">
+            <div className="h-3 overflow-hidden rounded-full bg-zinc-800 lg:h-5">
               <div
                 className="h-full rounded-full bg-amber-400 transition-[width] duration-300 ease-linear"
                 style={{
@@ -353,9 +356,6 @@ export default function TvClient({ code }: { code: string }) {
                 }}
               />
             </div>
-            <span className="w-16 shrink-0 font-mono text-3xl font-black text-amber-400 tabular-nums lg:w-24 lg:text-6xl">
-              {countdown}
-            </span>
           </div>
           )}
         </div>
