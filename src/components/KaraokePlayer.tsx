@@ -4,7 +4,16 @@ import { useEffect, useRef, useState } from 'react'
 
 type YTPlayer = {
   loadVideoById: (id: string) => void
+  pauseVideo: () => void
+  playVideo: () => void
+  seekTo: (seconds: number, allowSeekAhead?: boolean) => void
   destroy: () => void
+}
+
+export type PlayerApi = {
+  pause: () => void
+  resume: () => void
+  restart: () => void
 }
 
 declare global {
@@ -51,12 +60,13 @@ function loadYouTubeApi() {
 
 type Props = {
   videoId: string | null
+  apiRef?: React.MutableRefObject<PlayerApi | null>
   onEnded: () => void
   onError: () => void
   onAutoplayBlocked: () => void
 }
 
-export function KaraokePlayer({ videoId, onEnded, onError, onAutoplayBlocked }: Props) {
+export function KaraokePlayer({ videoId, apiRef, onEnded, onError, onAutoplayBlocked }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const playerRef = useRef<YTPlayer | null>(null)
   const [ready, setReady] = useState(false)
@@ -67,6 +77,13 @@ export function KaraokePlayer({ videoId, onEnded, onError, onAutoplayBlocked }: 
     let mounted = true
     loadYouTubeApi().then((YT) => {
       if (!mounted || !containerRef.current) return
+      if (apiRef) {
+        apiRef.current = {
+          pause: () => playerRef.current?.pauseVideo(),
+          resume: () => playerRef.current?.playVideo(),
+          restart: () => playerRef.current?.seekTo(0, true),
+        }
+      }
       playerRef.current = new YT.Player(containerRef.current, {
         width: '100%',
         height: '100%',
@@ -93,10 +110,12 @@ export function KaraokePlayer({ videoId, onEnded, onError, onAutoplayBlocked }: 
     })
     return () => {
       mounted = false
+      if (apiRef) apiRef.current = null
       playerRef.current?.destroy()
       playerRef.current = null
       setReady(false)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Carga el vídeo solo cuando el player ha disparado onReady

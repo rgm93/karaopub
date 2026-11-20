@@ -27,7 +27,7 @@ export function useRoom(code: string) {
       .select('*')
       .eq('room_id', r.id)
       .in('status', ['queued', 'playing'])
-      .order('created_at', { ascending: true })
+      .order('position', { ascending: true })
     setRequests((reqs ?? []) as KaraokeRequest[])
     setLoading(false)
   }, [code])

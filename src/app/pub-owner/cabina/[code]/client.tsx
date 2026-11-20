@@ -84,18 +84,43 @@ export default function CabinaClient({ code }: { code: string }) {
       <section className="rounded-2xl bg-zinc-900 p-4">
         <p className="text-xs font-bold tracking-widest text-zinc-500">SONANDO AHORA</p>
         {current ? (
-          <div className="mt-2 flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <p className="truncate font-bold">{current.singer_name}</p>
-              <p className="truncate text-sm text-zinc-400">{current.title}</p>
+          <div className="mt-2 space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="truncate font-bold">{current.singer_name}</p>
+                <p className="truncate text-sm text-zinc-400">{current.title}</p>
+              </div>
+              <button
+                disabled={busy}
+                onClick={() => rpc('karaoke_finish_current', { p_outcome: 'skipped' })}
+                className="shrink-0 rounded-xl bg-red-500/80 px-4 py-2 font-bold hover:bg-red-500 disabled:opacity-40"
+              >
+                ⏭ Saltar
+              </button>
             </div>
-            <button
-              disabled={busy}
-              onClick={() => rpc('karaoke_finish_current', { p_outcome: 'skipped' })}
-              className="shrink-0 rounded-xl bg-red-500/80 px-4 py-2 font-bold hover:bg-red-500 disabled:opacity-40"
-            >
-              ⏭ Saltar
-            </button>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                disabled={busy}
+                onClick={() => rpc('karaoke_player_cmd', { p_cmd: 'pause' })}
+                className="rounded-xl bg-zinc-800 py-2 text-sm font-bold hover:bg-zinc-700 disabled:opacity-40"
+              >
+                ⏸ Pausar
+              </button>
+              <button
+                disabled={busy}
+                onClick={() => rpc('karaoke_player_cmd', { p_cmd: 'resume' })}
+                className="rounded-xl bg-zinc-800 py-2 text-sm font-bold hover:bg-zinc-700 disabled:opacity-40"
+              >
+                ▶ Reanudar
+              </button>
+              <button
+                disabled={busy}
+                onClick={() => rpc('karaoke_player_cmd', { p_cmd: 'restart' })}
+                className="rounded-xl bg-zinc-800 py-2 text-sm font-bold hover:bg-zinc-700 disabled:opacity-40"
+              >
+                ↺ Empezar de 0
+              </button>
+            </div>
           </div>
         ) : (
           <p className="mt-2 text-sm text-zinc-400">
@@ -134,10 +159,27 @@ export default function CabinaClient({ code }: { code: string }) {
       {/* Cola */}
       <section>
         <p className="mb-2 text-xs font-bold tracking-widest text-zinc-500">EN COLA ({queue.length})</p>
-        <ol className="space-y-2">
+        <ol className="space-y-3">
           {queue.map((r, i) => (
             <li key={r.id} className="flex items-center gap-3 rounded-xl bg-zinc-900 p-3">
-              <span className="w-6 text-center font-black text-zinc-500">{i + 1}</span>
+              <div className="flex w-8 flex-col">
+                <button
+                  disabled={busy || i === 0}
+                  onClick={() => rpc('karaoke_move', { p_request_id: r.id, p_dir: 'up' })}
+                  title="Subir en la cola"
+                  className="rounded-t-lg bg-zinc-800 px-2 py-1 text-xs leading-none hover:bg-zinc-700 disabled:opacity-30"
+                >
+                  ▲
+                </button>
+                <button
+                  disabled={busy || i === queue.length - 1}
+                  onClick={() => rpc('karaoke_move', { p_request_id: r.id, p_dir: 'down' })}
+                  title="Bajar en la cola"
+                  className="mt-0.5 rounded-b-lg bg-zinc-800 px-2 py-1 text-xs leading-none hover:bg-zinc-700 disabled:opacity-30"
+                >
+                  ▼
+                </button>
+              </div>
               {r.thumbnail_url && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={r.thumbnail_url} alt="" className="h-10 w-16 shrink-0 rounded object-cover" />

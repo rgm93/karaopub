@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { useRoom } from '@/lib/useRoom'
 import { QRImage } from '@/components/QRImage'
 import { KaraokePlayer } from '@/components/KaraokePlayer'
+import type { PlayerApi } from '@/components/KaraokePlayer'
 
 export default function TvClient({ code }: { code: string }) {
   const { room, requests, loading, notFound } = useRoom(code)
@@ -16,6 +17,8 @@ export default function TvClient({ code }: { code: string }) {
   const [doneId, setDoneId] = useState<string | null>(null)
   const nextLock = useRef(false)
   const lastFinished = useRef<string | null>(null)
+  const playerApi = useRef<PlayerApi | null>(null)
+  const lastCmdSeq = useRef<number | null>(null)
 
   useEffect(() => {
     // La URL del QR se compone cuando cargue la sala (necesita pub_id)
@@ -86,6 +89,17 @@ export default function TvClient({ code }: { code: string }) {
     [current, rpc],
   )
 
+  // Comandos del pub: pause / resume / restart
+  useEffect(() => {
+    if (!room || room.player_cmd_seq === lastCmdSeq.current) return
+    lastCmdSeq.current = room.player_cmd_seq
+    const api = playerApi.current
+    if (!api) return
+    if (room.player_cmd === 'pause') api.pause()
+    else if (room.player_cmd === 'resume') api.resume()
+    else if (room.player_cmd === 'restart') api.restart()
+  }, [room])
+
   if (loading) {
     return <main className="flex min-h-dvh items-center justify-center bg-zinc-950 text-zinc-400">Cargando…</main>
   }
@@ -120,7 +134,7 @@ export default function TvClient({ code }: { code: string }) {
               <p className="mt-3 text-xl text-zinc-500">Escanea el QR y pide la primera canción</p>
             </div>
           )}
-          <ol className="space-y-3">
+          <ol className="space-y-3 lg:space-y-4">
             {queue.slice(0, 8).map((r, i) => (
               <li
                 key={r.id}
@@ -198,6 +212,7 @@ export default function TvClient({ code }: { code: string }) {
       {started && current && doneId !== current.id && (
         <div className="absolute inset-0 z-30 bg-black">
           <KaraokePlayer
+            apiRef={playerApi}
             videoId={current.video_id}
             onEnded={() => finish('done')}
             onError={() => finish('error')}

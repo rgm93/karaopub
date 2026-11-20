@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRoom } from '@/lib/useRoom'
-import type { SearchResult } from '@/lib/types'
+import type { KaraokeRequest, SearchResult } from '@/lib/types'
 
 const ERROR_MESSAGES: Record<string, string> = {
   room_not_found: 'La sala no existe.',
@@ -11,6 +11,51 @@ const ERROR_MESSAGES: Record<string, string> = {
   singer_limit: 'Ya tienes el máximo de canciones en cola. Deja cantar a los demás 😄',
   queue_full: 'La cola está llena. Espera a que avance un poco.',
   session_closed: 'La sesión ha terminado. ¡Gracias por cantar!',
+  duplicate_song: 'Esa canción ya está pedida o ya se ha cantado. ¡Elige otra! 🎵',
+  not_found: 'No se pudo quitar. ¿Ya habrá empezado?',
+}
+
+function Modal({
+  title,
+  children,
+  confirmLabel = 'Confirmar',
+  onConfirm,
+  onClose,
+}: {
+  title: string
+  children: React.ReactNode
+  confirmLabel?: string
+  onConfirm: () => void
+  onClose: () => void
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-6"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-sm rounded-2xl bg-zinc-900 p-5 text-center"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 className="text-lg font-bold">{title}</h2>
+        <div className="mt-2 text-sm text-zinc-400">{children}</div>
+        <div className="mt-5 grid grid-cols-2 gap-3">
+          <button
+            onClick={onClose}
+            className="rounded-xl bg-zinc-800 py-3 font-bold hover:bg-zinc-700"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={onConfirm}
+            className="rounded-xl bg-amber-500 py-3 font-bold text-zinc-950 hover:bg-amber-400"
+          >
+            {confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 export default function SalaClient({ pubId, code }: { pubId: string; code: string }) {
@@ -25,6 +70,9 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
   const [searched, setSearched] = useState(false)
   const [msg, setMsg] = useState('')
   const [myIds, setMyIds] = useState<string[]>([])
+  const [deviceKey, setDeviceKey] = useState<string | null>(null)
+  const [pendingPick, setPendingPick] = useState<SearchResult | null>(null)
+  const [pendingCancel, setPendingCancel] = useState<KaraokeRequest | null>(null)
 
   useEffect(() => {
     const n = localStorage.getItem('karaopub_name')
@@ -33,6 +81,12 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
       setNameSet(true)
     }
     setMyIds(JSON.parse(localStorage.getItem(`karaopub_my_${code}`) ?? '[]'))
+    let dk = localStorage.getItem('karaopub_device')
+    if (!dk) {
+      dk = crypto.randomUUID()
+      localStorage.setItem('karaopub_device', dk)
+    }
+    setDeviceKey(dk)
   }, [code])
 
   const queue = requests.filter((r) => r.status === 'queued')
@@ -59,10 +113,12 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
   }
 
   const pick = async (r: SearchResult) => {
+    setPendingPick(null)
     setMsg('')
     const { data, error } = await supabase.rpc('karaoke_add_request', {
       p_code: code,
       p_singer: name,
+      p_singer_key: deviceKey,
       p_video_id: r.videoId,
       p_title: r.title,
       p_channel: r.channel,
@@ -80,6 +136,24 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
     setQuery('')
     setSearched(false)
     setMsg(`¡Apuntada! «${r.title}»`)
+  }
+
+  const cancelMine = async (r: KaraokeRequest) => {
+    setPendingCancel(null)
+    setMsg('')
+    const { error } = await supabase.rpc('karaoke_cancel', {
+      p_code: code,
+      p_request_id: r.id,
+      p_singer_key: deviceKey,
+    })
+    if (error) {
+      setMsg(ERROR_MESSAGES[error.message] ?? 'No se pudo quitar. Inténtalo de nuevo.')
+      return
+    }
+    const ids = myIds.filter((id) => id !== r.id)
+    setMyIds(ids)
+    localStorage.setItem(`karaopub_my_${code}`, JSON.stringify(ids))
+    setMsg('Canción quitada de la cola.')
   }
 
   if (loading) {
@@ -179,7 +253,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
           {results.map((r) => (
             <button
               key={r.videoId}
-              onClick={() => pick(r)}
+              onClick={() => setPendingPick(r)}
               className="flex w-full items-center gap-3 rounded-xl bg-zinc-900 p-2 text-left hover:bg-zinc-800"
             >
               {r.thumbnail && (
@@ -205,7 +279,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
         {queue.length === 0 && !playing && (
           <p className="text-sm text-zinc-500">Cola vacía — pide la primera canción.</p>
         )}
-        <ol className="space-y-2">
+        <ol className="space-y-3">
           {queue.map((r, i) => (
             <li
               key={r.id}
@@ -214,14 +288,46 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
               }`}
             >
               <span className="w-6 text-center font-black text-zinc-500">{i + 1}</span>
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-bold">{r.singer_name}</p>
                 <p className="truncate text-xs text-zinc-400">{r.title}</p>
               </div>
+              {myIds.includes(r.id) && (
+                <button
+                  onClick={() => setPendingCancel(r)}
+                  title="Quitar mi canción"
+                  className="shrink-0 rounded-lg bg-zinc-800 px-3 py-2 text-xs font-bold text-red-300 hover:bg-zinc-700"
+                >
+                  ✕ Quitar
+                </button>
+              )}
             </li>
           ))}
         </ol>
       </section>
+
+      {pendingPick && (
+        <Modal
+          title="¿Apuntar esta canción?"
+          confirmLabel="🎤 ¡A cantar!"
+          onConfirm={() => pick(pendingPick)}
+          onClose={() => setPendingPick(null)}
+        >
+          <p className="font-bold text-zinc-200">{pendingPick.title}</p>
+          <p className="mt-1">{pendingPick.channel}</p>
+        </Modal>
+      )}
+      {pendingCancel && (
+        <Modal
+          title="¿Quitar tu canción?"
+          confirmLabel="Sí, quitarla"
+          onConfirm={() => cancelMine(pendingCancel)}
+          onClose={() => setPendingCancel(null)}
+        >
+          <p className="font-bold text-zinc-200">{pendingCancel.title}</p>
+          <p className="mt-1">Perderás tu turno en la cola.</p>
+        </Modal>
+      )}
     </main>
   )
 }

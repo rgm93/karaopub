@@ -11,21 +11,25 @@ export type Room = {
   max_queue: number
   current_request_id: string | null
   interlude_until: string | null
+  player_cmd: string | null
+  player_cmd_seq: number
   created_at: string
 }
 
-export type RequestStatus = 'queued' | 'playing' | 'done' | 'skipped' | 'error'
+export type RequestStatus = 'queued' | 'playing' | 'done' | 'skipped' | 'error' | 'removed'
 
 export type KaraokeRequest = {
   id: string
   room_id: string
   singer_name: string
+  singer_key: string | null
   video_id: string
   title: string
   channel_title: string | null
   thumbnail_url: string | null
   duration_seconds: number | null
   status: RequestStatus
+  position: number
   created_at: string
   played_at: string | null
 }
