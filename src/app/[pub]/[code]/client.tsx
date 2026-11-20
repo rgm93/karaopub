@@ -24,7 +24,7 @@ function Modal({
 }: {
   title: string
   children: React.ReactNode
-  confirmLabel?: string
+  confirmLabel?: React.ReactNode
   onConfirm: () => void
   onClose: () => void
 }) {
@@ -457,7 +457,14 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
       {previewReq && (
         <Modal
           title={previewReq.heading}
-          confirmLabel="▶ Abrir en YouTube"
+          confirmLabel={
+            <span className="inline-flex items-center justify-center gap-2">
+              <svg viewBox="0 0 24 24" className="h-5 w-5 fill-current" aria-hidden="true">
+                <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31.4 31.4 0 0 0 0 12c0 1.9.2 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1c.3-1.9.5-3.9.5-5.8 0-1.9-.2-3.9-.5-5.8zM9.6 15.6V8.4L15.8 12l-6.2 3.6z" />
+              </svg>
+              Abrir en YouTube
+            </span>
+          }
           onConfirm={() => {
             window.open(`https://www.youtube.com/watch?v=${previewReq.video_id}`, '_blank')
             setPreviewReq(null)

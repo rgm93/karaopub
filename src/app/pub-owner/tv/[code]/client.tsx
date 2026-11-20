@@ -15,7 +15,7 @@ export default function TvClient({ code }: { code: string }) {
   const [autoplayBlocked, setAutoplayBlocked] = useState(false)
   const [now, setNow] = useState(Date.now())
   const [doneId, setDoneId] = useState<string | null>(null)
-  const [bgmIdx, setBgmIdx] = useState(() => Math.floor(Math.random() * 1000))
+  const [bgmId, setBgmId] = useState<string | null>(null)
   const [engineErr, setEngineErr] = useState('')
   const nextLock = useRef(false)
   const lastFinished = useRef<string | null>(null)
@@ -36,7 +36,15 @@ export default function TvClient({ code }: { code: string }) {
   const current = requests.find((r) => r.id === room?.current_request_id) ?? null
   const queue = requests.filter((r) => r.status === 'queued')
   const nextUp = queue[0] ?? null
-  const bgmVideo = bgm.length > 0 ? bgm[bgmIdx % bgm.length] : null
+  const bgmVideo = (bgmId && bgm.find((t) => t.id === bgmId)) || bgm[0] || null
+  const nextBgm = useCallback(() => {
+    setBgmId(() => {
+      if (bgm.length === 0) return null
+      if (bgm.length === 1) return bgm[0].id
+      const others = bgm.filter((t) => t.id !== bgmVideo?.id)
+      return others[Math.floor(Math.random() * others.length)].id
+    })
+  }, [bgm, bgmVideo])
 
   // Media de votos en directo de la canción actual
   const [voteStats, setVoteStats] = useState<{ avg: number; count: number } | null>(null)
@@ -344,16 +352,8 @@ export default function TvClient({ code }: { code: string }) {
           <div className="pointer-events-none absolute h-px w-px overflow-hidden opacity-0">
             <KaraokePlayer
               videoId={bgmVideo.video_id}
-              onEnded={() =>
-                setBgmIdx((i) =>
-                  bgm.length <= 1 ? 0 : (i + 1 + Math.floor(Math.random() * (bgm.length - 1))) % bgm.length,
-                )
-              }
-              onError={() =>
-                setBgmIdx((i) =>
-                  bgm.length <= 1 ? 0 : (i + 1 + Math.floor(Math.random() * (bgm.length - 1))) % bgm.length,
-                )
-              }
+              onEnded={nextBgm}
+              onError={nextBgm}
               onAutoplayBlocked={() => setAutoplayBlocked(true)}
             />
           </div>
