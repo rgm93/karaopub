@@ -75,6 +75,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
   const [pendingCancel, setPendingCancel] = useState<KaraokeRequest | null>(null)
   const [nameTaken, setNameTaken] = useState(false)
   const [myVote, setMyVote] = useState(0)
+  const [previewReq, setPreviewReq] = useState<KaraokeRequest | null>(null)
 
   useEffect(() => {
     const n = localStorage.getItem('karaopub_name')
@@ -265,7 +266,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
         </h1>
         <p className="text-sm text-zinc-400">Hola, {name} 👋</p>
         {room.bgm_now && (
-          <p className="mt-1 truncate text-xs text-zinc-500">
+          <p className="mt-2 truncate rounded-lg bg-zinc-900 px-3 py-1.5 text-sm text-zinc-400">
             🎵 Suena de fondo: {room.bgm_now}
           </p>
         )}
@@ -363,11 +364,17 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
                 myIds.includes(r.id) ? 'bg-amber-500/15 ring-1 ring-amber-500/40' : 'bg-zinc-900'
               }`}
             >
-              <span className="w-6 text-center font-black text-zinc-500">{i + 1}</span>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-bold">{r.singer_name}</p>
-                <p className="truncate text-xs text-zinc-400">{r.title}</p>
-              </div>
+              <button
+                onClick={() => setPreviewReq(r)}
+                title="Ver qué canción es"
+                className="flex min-w-0 flex-1 items-center gap-3 text-left"
+              >
+                <span className="w-6 text-center font-black text-zinc-500">{i + 1}</span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-bold">{r.singer_name}</p>
+                  <p className="truncate text-xs text-zinc-400">{r.title}</p>
+                </div>
+              </button>
               {myIds.includes(r.id) && (
                 <button
                   onClick={() => setPendingCancel(r)}
@@ -411,6 +418,29 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
         >
           <p className="font-bold text-zinc-200">{pendingCancel.title}</p>
           <p className="mt-1">Perderás tu turno en la cola.</p>
+        </Modal>
+      )}
+      {previewReq && (
+        <Modal
+          title={`${previewReq.singer_name} cantará…`}
+          confirmLabel="▶ Abrir en YouTube"
+          onConfirm={() => {
+            window.open(`https://www.youtube.com/watch?v=${previewReq.video_id}`, '_blank')
+            setPreviewReq(null)
+          }}
+          onClose={() => setPreviewReq(null)}
+        >
+          <div className="mb-3 overflow-hidden rounded-xl">
+            <iframe
+              src={`https://www.youtube.com/embed/${previewReq.video_id}?rel=0`}
+              title={previewReq.title}
+              allow="autoplay; encrypted-media; picture-in-picture"
+              allowFullScreen
+              className="aspect-video w-full"
+            />
+          </div>
+          <p className="font-bold text-zinc-200">{previewReq.title}</p>
+          <p className="mt-1">Dale al play para escucharla, o ábrela en YouTube.</p>
         </Modal>
       )}
     </main>

@@ -296,9 +296,15 @@ export default function CabinaClient({ code }: { code: string }) {
         <p className="text-xs font-bold tracking-widest text-zinc-500">
           🎵 MÚSICA DE FONDO ({bgm.length})
         </p>
-        <p className="mt-1 text-xs text-zinc-500">
-          Suena en la tele durante la cuenta atrás y cuando la cola está vacía.
-        </p>
+        {room.bgm_now ? (
+          <p className="mt-1 truncate text-sm font-bold text-amber-300">
+            ▶ Suena ahora: {room.bgm_now}
+          </p>
+        ) : (
+          <p className="mt-1 text-xs text-zinc-500">
+            Suena en la tele durante la cuenta atrás y cuando la cola está vacía.
+          </p>
+        )}
         <form
           onSubmit={async (e) => {
             e.preventDefault()

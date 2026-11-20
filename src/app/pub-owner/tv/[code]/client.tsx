@@ -237,26 +237,26 @@ export default function TvClient({ code }: { code: string }) {
           </ol>
         </section>
 
-        <aside className="flex w-full shrink-0 flex-row items-center justify-center gap-5 rounded-2xl bg-zinc-900 p-4 text-center lg:w-96 lg:flex-col lg:gap-6 lg:p-8">
-          <div className="rounded-2xl bg-white p-4">
-            <QRImage url={guestUrl} size={280} />
+        <aside className="flex w-full shrink-0 flex-row items-center justify-center gap-5 rounded-2xl bg-zinc-900 p-4 text-center lg:w-1/2 lg:flex-col lg:gap-10 lg:p-10">
+          <div className="rounded-2xl bg-white p-5">
+            <QRImage url={guestUrl} size={420} />
           </div>
           <div>
-            <p className="text-xl font-bold lg:text-4xl">Pide tu canción</p>
-            <p className="mt-2 text-sm text-zinc-400 lg:text-xl">
+            <p className="text-xl font-bold lg:text-6xl">Pide tu canción</p>
+            <p className="mt-2 text-sm text-zinc-400 lg:mt-6 lg:text-3xl">
               Escanea el QR o entra en
               <br />
               <span className="font-mono text-zinc-200">karaopub.vercel.app/join</span>
             </p>
-            <p className="mt-3 text-xs text-zinc-500 lg:text-lg">
+            <p className="mt-3 text-xs text-zinc-500 lg:mt-6 lg:text-2xl">
               y escribe el código{' '}
-              <span className="font-mono text-lg font-black tracking-[0.3em] text-amber-400 lg:text-3xl">
+              <span className="font-mono text-lg font-black tracking-[0.3em] text-amber-400 lg:text-5xl">
                 {code}
               </span>
             </p>
           </div>
           {!room.accepting_requests && (
-            <p className="rounded-lg bg-red-500/20 px-3 py-1 text-sm text-red-300 lg:text-base">
+            <p className="rounded-lg bg-red-500/20 px-3 py-1 text-sm text-red-300 lg:px-6 lg:py-3 lg:text-2xl">
               Peticiones pausadas
             </p>
           )}
@@ -353,7 +353,7 @@ export default function TvClient({ code }: { code: string }) {
               onAutoplayBlocked={() => setAutoplayBlocked(true)}
             />
           </div>
-          <p className="absolute bottom-3 left-4 z-10 max-w-md truncate text-xs text-zinc-500">
+          <p className="absolute bottom-3 left-4 z-10 max-w-md truncate rounded-lg bg-zinc-950/80 px-3 py-1.5 text-xs text-zinc-400 lg:bottom-5 lg:left-6 lg:max-w-xl lg:text-xl">
             🎵 Suena de fondo: {bgmVideo.title}
           </p>
         </>
