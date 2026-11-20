@@ -143,7 +143,7 @@ export default function PubOwnerPage() {
     return (
       <main className="flex min-h-dvh flex-col items-center justify-center gap-6 bg-zinc-950 p-6 text-center text-zinc-100">
         <div>
-          <Logo className="mx-auto h-20 w-auto" />
+          <Logo className="mx-auto h-14 w-auto" />
           <h1 className="mt-2 text-3xl font-black">
             Karao<span className="text-amber-400">Pub</span>
           </h1>
@@ -178,7 +178,7 @@ export default function PubOwnerPage() {
       <header className="flex items-center justify-between">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-black">
-            <Logo className="h-9 w-auto" /> Karaoke · {session.pub_name}
+            <Logo className="h-7 w-auto" /> Karaoke · {session.pub_name}
           </h1>
           <p className="text-sm text-zinc-400">
             Sesión activa · código{' '}

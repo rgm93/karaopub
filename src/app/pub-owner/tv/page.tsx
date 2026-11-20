@@ -35,7 +35,7 @@ export default function TvPairPage() {
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center gap-6 bg-zinc-950 p-6 text-center text-zinc-100">
       <div>
-        <Logo className="mx-auto h-20 w-auto" />
+        <Logo className="mx-auto h-14 w-auto" />
         <h1 className="mt-3 text-4xl font-black">
           Karao<span className="text-amber-400">Pub</span> · TV
         </h1>
