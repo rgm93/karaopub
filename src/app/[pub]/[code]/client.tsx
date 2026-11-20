@@ -152,7 +152,15 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
 
   const search = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!query.trim()) return
+    const q = query.trim()
+    if (!q) return
+    // Si lo buscado está vetado por el pub, modal directo
+    if (blockTerms.some((t) => q.toLowerCase().includes(t))) {
+      setResults([])
+      setSearched(false)
+      setBlockedPick({ videoId: '', title: q, channel: '' })
+      return
+    }
     setSearching(true)
     setMsg('')
     setSearched(true)
