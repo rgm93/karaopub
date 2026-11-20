@@ -379,8 +379,9 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
         )}
         {queue.length === 0 && !playing && (
           <div className="py-8 text-center">
-            <p className="text-4xl">🎤</p>
-            <p className="mt-3 text-sm text-zinc-500">Cola vacía — pide la primera canción.</p>
+            <p className="font-bold text-zinc-300">Cola vacía</p>
+            <p className="mt-3 text-4xl">🎤</p>
+            <p className="mt-3 text-sm text-zinc-500">¡Pide la primera canción!</p>
           </div>
         )}
         <ol className="space-y-3">
