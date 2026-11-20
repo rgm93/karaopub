@@ -127,8 +127,10 @@ async function filterEmbeddable(results: SearchResult[]): Promise<SearchResult[]
           const ps = info.playability_status as
             | { status?: string; embeddable?: boolean; playable_in_embed?: boolean }
             | undefined
-          if (ps?.embeddable === false || ps?.playable_in_embed === false) return null
-          if (ps?.status && ps.status !== 'OK') return null
+          // Solo descartar cuando YouTube confirma: reproducible pero no embebible.
+          // Si la respuesta está gateada (bot-check, login, etc.) no sabemos nada → conservar.
+          if (ps?.status === 'OK' && (ps.embeddable === false || ps.playable_in_embed === false))
+            return null
           return r
         } catch {
           return r // si no se puede comprobar, no lo descartamos
