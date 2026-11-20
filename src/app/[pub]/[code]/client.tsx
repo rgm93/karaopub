@@ -356,13 +356,9 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
       )}
 
       <section className="pb-8">
-        <p
-          className={`mb-2 text-xs font-bold tracking-widest text-zinc-400 ${
-            queue.length === 0 && !playing ? 'text-center' : ''
-          }`}
-        >
-          LA COLA
-        </p>
+        {queue.length > 0 && (
+          <p className="mb-2 text-xs font-bold tracking-widest text-zinc-400">Cola</p>
+        )}
         {room.bgm_now && room.bgm_now_id && (
           <button
             onClick={() =>
