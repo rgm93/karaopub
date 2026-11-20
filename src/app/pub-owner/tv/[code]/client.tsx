@@ -250,11 +250,9 @@ export default function TvClient({ code }: { code: string }) {
               <br />
               <span className="font-mono text-zinc-200">karaopub.vercel.app/join</span>
             </p>
-            <p className="mt-3 text-xs text-zinc-500 lg:mt-6 lg:text-2xl">
-              y escribe el código{' '}
-              <span className="font-mono text-lg font-black tracking-[0.3em] text-amber-400 lg:text-5xl">
-                {code}
-              </span>
+            <p className="mt-3 text-xs text-zinc-500 lg:mt-6 lg:text-2xl">y escribe el código</p>
+            <p className="mt-1 font-mono text-lg font-black tracking-[0.3em] text-amber-400 lg:mt-2 lg:text-7xl">
+              {code}
             </p>
           </div>
           {!room.accepting_requests && (
