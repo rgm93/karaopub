@@ -352,9 +352,18 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
       )}
 
       <section className="pb-8">
-        <p className="mb-2 text-xs font-bold tracking-widest text-zinc-400">LA COLA</p>
+        <p
+          className={`mb-2 text-xs font-bold tracking-widest text-zinc-400 ${
+            queue.length === 0 && !playing ? 'text-center' : ''
+          }`}
+        >
+          LA COLA
+        </p>
         {queue.length === 0 && !playing && (
-          <p className="text-sm text-zinc-500">Cola vacía — pide la primera canción.</p>
+          <div className="py-8 text-center">
+            <p className="text-4xl">🎤</p>
+            <p className="mt-3 text-sm text-zinc-500">Cola vacía — pide la primera canción.</p>
+          </div>
         )}
         <ol className="space-y-3">
           {queue.map((r, i) => (
