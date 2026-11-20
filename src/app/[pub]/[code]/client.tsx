@@ -74,6 +74,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
   const [myIds, setMyIds] = useState<string[]>([])
   const [deviceKey, setDeviceKey] = useState<string | null>(null)
   const [pendingPick, setPendingPick] = useState<SearchResult | null>(null)
+  const [blockedPick, setBlockedPick] = useState<SearchResult | null>(null)
   const [pendingCancel, setPendingCancel] = useState<KaraokeRequest | null>(null)
   const [nameTaken, setNameTaken] = useState(false)
   const [blockTerms, setBlockTerms] = useState<string[]>([])
@@ -350,43 +351,27 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
       {results.length > 0 && (
         <div className="space-y-2">
           <p className="text-xs font-bold tracking-widest text-zinc-400">ELIGE LA TUYA</p>
-          {results.map((r) =>
-            isBlocked(r) ? (
-              <div
-                key={r.videoId}
-                className="flex w-full items-center gap-3 rounded-xl bg-zinc-900/50 p-2 text-left opacity-60"
-              >
-                {r.thumbnail && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={r.thumbnail} alt="" className="h-14 w-24 shrink-0 rounded-lg object-cover grayscale" />
-                )}
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">{r.title}</p>
-                  <p className="truncate text-xs text-red-300">🚫 Vetada por el pub</p>
-                </div>
+          {results.map((r) => (
+            <button
+              key={r.videoId}
+              onClick={() => (isBlocked(r) ? setBlockedPick(r) : setPendingPick(r))}
+              className="flex w-full items-center gap-3 rounded-xl bg-zinc-900 p-2 text-left hover:bg-zinc-800"
+            >
+              {r.thumbnail && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={r.thumbnail} alt="" className="h-14 w-24 shrink-0 rounded-lg object-cover" />
+              )}
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium">{r.title}</p>
+                <p className="truncate text-xs text-zinc-400">
+                  {r.channel}
+                  {r.durationSeconds
+                    ? ` · ${Math.floor(r.durationSeconds / 60)}:${String(r.durationSeconds % 60).padStart(2, '0')}`
+                    : ''}
+                </p>
               </div>
-            ) : (
-              <button
-                key={r.videoId}
-                onClick={() => setPendingPick(r)}
-                className="flex w-full items-center gap-3 rounded-xl bg-zinc-900 p-2 text-left hover:bg-zinc-800"
-              >
-                {r.thumbnail && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={r.thumbnail} alt="" className="h-14 w-24 shrink-0 rounded-lg object-cover" />
-                )}
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">{r.title}</p>
-                  <p className="truncate text-xs text-zinc-400">
-                    {r.channel}
-                    {r.durationSeconds
-                      ? ` · ${Math.floor(r.durationSeconds / 60)}:${String(r.durationSeconds % 60).padStart(2, '0')}`
-                      : ''}
-                  </p>
-                </div>
-              </button>
-            ),
-          )}
+            </button>
+          ))}
         </div>
       )}
 
@@ -476,6 +461,19 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
           </div>
           <p className="font-bold text-zinc-200">{pendingPick.title}</p>
           <p className="mt-1">{pendingPick.channel} · dale al play para escucharla antes</p>
+        </Modal>
+      )}
+      {blockedPick && (
+        <Modal
+          title="🚫 Vetada por el pub"
+          confirmLabel="Buscar otra"
+          onConfirm={() => setBlockedPick(null)}
+          onClose={() => setBlockedPick(null)}
+        >
+          <p className="font-bold text-zinc-200">{blockedPick.title}</p>
+          <p className="mt-1">
+            El pub tiene restringido este artista o canción. ¡Busca otra canción o artista!
+          </p>
         </Modal>
       )}
       {pendingCancel && (
