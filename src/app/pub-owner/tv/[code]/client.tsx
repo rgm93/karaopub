@@ -150,6 +150,15 @@ export default function TvClient({ code }: { code: string }) {
     return () => clearInterval(t)
   }, [started, room, hostKey, doneId, rpc])
 
+  // Publica qué tema de fondo suena (para TV y clientes)
+  const bgmPublished = useRef<string | null>(null)
+  useEffect(() => {
+    const title = started && !current && bgmVideo ? bgmVideo.title : null
+    if (title === bgmPublished.current || !hostKey) return
+    bgmPublished.current = title
+    rpc('karaoke_bgm_now', { p_title: title ?? '' })
+  }, [started, current, bgmVideo, hostKey, rpc])
+
   // Comandos del pub: pause / resume / restart
   useEffect(() => {
     if (!room || room.player_cmd_seq === lastCmdSeq.current) return
@@ -159,6 +168,7 @@ export default function TvClient({ code }: { code: string }) {
     if (room.player_cmd === 'pause') api.pause()
     else if (room.player_cmd === 'resume') api.resume()
     else if (room.player_cmd === 'restart') api.restart()
+    else if (room.player_cmd === 'nearend') api.nearEnd()
   }, [room])
 
   if (loading) {
@@ -322,10 +332,10 @@ export default function TvClient({ code }: { code: string }) {
         </div>
       )}
 
-      {/* ── Música de fondo: suena en la espera (countdown / cola vacía) ── */}
+      {/* ── Música de fondo: solo audio; el título se muestra discreto ── */}
       {started && !current && bgmVideo && (
-        <div className="absolute right-4 bottom-4 z-30 w-40 overflow-hidden rounded-xl opacity-90 ring-1 ring-zinc-700 lg:w-72">
-          <div className="aspect-video bg-black">
+        <>
+          <div className="pointer-events-none absolute h-px w-px overflow-hidden opacity-0">
             <KaraokePlayer
               videoId={bgmVideo.video_id}
               onEnded={() => setBgmIdx((i) => i + 1)}
@@ -333,10 +343,10 @@ export default function TvClient({ code }: { code: string }) {
               onAutoplayBlocked={() => setAutoplayBlocked(true)}
             />
           </div>
-          <p className="truncate bg-zinc-900 px-2 py-1 text-xs text-zinc-400">
-            🎵 {bgmVideo.title}
+          <p className="absolute bottom-3 left-4 z-10 max-w-md truncate text-xs text-zinc-500">
+            🎵 Suena de fondo: {bgmVideo.title}
           </p>
-        </div>
+        </>
       )}
 
       {/* ── Aviso: error del motor / sin clave ── */}

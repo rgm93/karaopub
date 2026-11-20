@@ -7,6 +7,7 @@ type YTPlayer = {
   pauseVideo: () => void
   playVideo: () => void
   seekTo: (seconds: number, allowSeekAhead?: boolean) => void
+  getDuration: () => number
   destroy: () => void
 }
 
@@ -14,6 +15,7 @@ export type PlayerApi = {
   pause: () => void
   resume: () => void
   restart: () => void
+  nearEnd: () => void
 }
 
 declare global {
@@ -82,6 +84,10 @@ export function KaraokePlayer({ videoId, apiRef, onEnded, onError, onAutoplayBlo
           pause: () => playerRef.current?.pauseVideo(),
           resume: () => playerRef.current?.playVideo(),
           restart: () => playerRef.current?.seekTo(0, true),
+          nearEnd: () => {
+            const d = playerRef.current?.getDuration() ?? 0
+            if (d > 6) playerRef.current?.seekTo(d - 5, true)
+          },
         }
       }
       playerRef.current = new YT.Player(containerRef.current, {

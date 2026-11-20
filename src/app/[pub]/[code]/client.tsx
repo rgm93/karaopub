@@ -264,6 +264,11 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
           Karao<span className="text-amber-400">Pub</span> · {room.name}
         </h1>
         <p className="text-sm text-zinc-400">Hola, {name} 👋</p>
+        {room.bgm_now && (
+          <p className="mt-1 truncate text-xs text-zinc-500">
+            🎵 Suena de fondo: {room.bgm_now}
+          </p>
+        )}
       </header>
 
       {playing && (

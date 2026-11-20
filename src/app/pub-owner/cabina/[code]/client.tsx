@@ -145,7 +145,7 @@ export default function CabinaClient({ code }: { code: string }) {
                 ⏭ Saltar
               </button>
             </div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-4 gap-2">
               <button
                 disabled={busy}
                 onClick={() => rpc('karaoke_player_cmd', { p_cmd: 'pause' })}
@@ -165,7 +165,15 @@ export default function CabinaClient({ code }: { code: string }) {
                 onClick={() => rpc('karaoke_player_cmd', { p_cmd: 'restart' })}
                 className="rounded-xl bg-zinc-800 py-2 text-sm font-bold hover:bg-zinc-700 disabled:opacity-40"
               >
-                ↺ Empezar de 0
+                ↺ De 0
+              </button>
+              <button
+                disabled={busy}
+                onClick={() => rpc('karaoke_player_cmd', { p_cmd: 'nearend' })}
+                title="Salta a 5 segundos del final (pruebas)"
+                className="rounded-xl bg-zinc-800 py-2 text-sm font-bold hover:bg-zinc-700 disabled:opacity-40"
+              >
+                ⏩ −5s
               </button>
             </div>
           </div>
