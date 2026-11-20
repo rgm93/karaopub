@@ -330,7 +330,10 @@ export default function CabinaClient({ code }: { code: string }) {
                       })
                       .then(({ error }) => {
                         if (error) setMsg(error.message === 'duplicate_bgm' ? 'Ya está en la lista.' : 'No se pudo añadir.')
-                        else setBgmResults(bgmResults.filter((x) => x.videoId !== r.videoId))
+                        else {
+                          setBgmResults([])
+                          setBgmQuery('')
+                        }
                       })
                   }
                   className="shrink-0 rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-black text-zinc-950 hover:bg-amber-400 disabled:opacity-40"
