@@ -145,7 +145,7 @@ export default function CabinaClient({ code }: { code: string }) {
                 ⏭ Saltar
               </button>
             </div>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               <button
                 disabled={busy}
                 onClick={() => rpc('karaoke_player_cmd', { p_cmd: 'pause' })}

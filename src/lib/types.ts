@@ -15,6 +15,7 @@ export type Room = {
   player_cmd_seq: number
   voting_enabled: boolean
   bgm_now: string | null
+  bgm_now_id: string | null
   created_at: string
 }
 

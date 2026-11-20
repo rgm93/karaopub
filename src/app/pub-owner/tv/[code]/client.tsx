@@ -154,9 +154,10 @@ export default function TvClient({ code }: { code: string }) {
   const bgmPublished = useRef<string | null>(null)
   useEffect(() => {
     const title = started && !current && bgmVideo ? bgmVideo.title : null
-    if (title === bgmPublished.current || !hostKey) return
-    bgmPublished.current = title
-    rpc('karaoke_bgm_now', { p_title: title ?? '' })
+    const key = `${title ?? ''}|${bgmVideo?.video_id ?? ''}`
+    if (key === bgmPublished.current || !hostKey) return
+    bgmPublished.current = key
+    rpc('karaoke_bgm_now', { p_title: title ?? '', p_video_id: bgmVideo?.video_id ?? '' })
   }, [started, current, bgmVideo, hostKey, rpc])
 
   // Comandos del pub: pause / resume / restart
@@ -185,19 +186,19 @@ export default function TvClient({ code }: { code: string }) {
   return (
     <main className="relative flex h-dvh flex-col overflow-hidden bg-zinc-950 text-zinc-100">
       {/* ── Cabecera ── */}
-      <header className="flex items-center justify-between px-4 py-3 lg:px-10 lg:py-5">
-        <h1 className="text-xl font-black lg:text-4xl">
+      <header className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 lg:px-10 lg:py-5">
+        <h1 className="min-w-0 text-xl font-black lg:text-4xl">
           Karao<span className="text-amber-400">Pub</span>
           <span className="ml-4 hidden text-xl font-medium text-zinc-400 sm:inline lg:text-2xl">{room.name}</span>
         </h1>
-        <span className="rounded-xl bg-zinc-800 px-4 py-2 font-mono text-lg tracking-[0.3em] lg:text-3xl">
+        <span className="shrink-0 rounded-xl bg-zinc-800 px-4 py-2 font-mono text-lg tracking-[0.3em] lg:text-3xl">
           {code}
         </span>
       </header>
 
       {/* ── Contenido: cola + QR ── */}
       <div className="flex min-h-0 flex-1 flex-col gap-4 px-4 pb-4 lg:flex-row lg:gap-8 lg:px-8 lg:pb-8">
-        <section className="flex-1 overflow-hidden">
+        <section className="min-w-0 flex-1 overflow-hidden">
           <p className="mb-4 text-sm font-bold tracking-[0.3em] text-zinc-500 lg:text-lg">A CONTINUACIÓN</p>
           {queue.length === 0 && !current && (
             <div className="flex h-full flex-col items-center justify-center text-center">
@@ -238,8 +239,8 @@ export default function TvClient({ code }: { code: string }) {
           </ol>
         </section>
 
-        <aside className="flex w-full shrink-0 flex-row items-center justify-center gap-5 rounded-2xl bg-zinc-900 p-4 text-center lg:w-1/2 lg:flex-col lg:gap-10 lg:p-10">
-          <div className="rounded-2xl bg-white p-5">
+        <aside className="flex w-full min-w-0 shrink-0 flex-row items-center justify-center gap-5 overflow-hidden rounded-2xl bg-zinc-900 p-4 text-center lg:w-1/2 lg:flex-col lg:gap-10 lg:p-10">
+          <div className="w-full max-w-[440px] shrink-0 rounded-2xl bg-white p-5 [&_img]:h-auto [&_img]:w-full">
             <QRImage url={guestUrl} size={420} />
           </div>
           <div>

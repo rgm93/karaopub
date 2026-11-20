@@ -75,7 +75,11 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
   const [pendingCancel, setPendingCancel] = useState<KaraokeRequest | null>(null)
   const [nameTaken, setNameTaken] = useState(false)
   const [myVote, setMyVote] = useState(0)
-  const [previewReq, setPreviewReq] = useState<KaraokeRequest | null>(null)
+  const [previewReq, setPreviewReq] = useState<{
+    video_id: string
+    title: string
+    heading: string
+  } | null>(null)
 
   useEffect(() => {
     const n = localStorage.getItem('karaopub_name')
@@ -265,7 +269,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
           Karao<span className="text-amber-400">Pub</span> · {room.name}
         </h1>
         <p className="text-sm text-zinc-400">Hola, {name} 👋</p>
-        {room.bgm_now && (
+        {room.bgm_now && !room.bgm_now_id && (
           <p className="mt-2 truncate rounded-lg bg-zinc-900 px-3 py-1.5 text-sm text-zinc-400">
             🎵 Suena de fondo: {room.bgm_now}
           </p>
@@ -359,6 +363,24 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
         >
           LA COLA
         </p>
+        {room.bgm_now && room.bgm_now_id && (
+          <button
+            onClick={() =>
+              setPreviewReq({
+                video_id: room.bgm_now_id!,
+                title: room.bgm_now!,
+                heading: '🎵 Suena de fondo ahora',
+              })
+            }
+            className="mb-3 flex w-full items-center gap-3 rounded-xl bg-zinc-800/60 p-3 text-left ring-1 ring-zinc-700/50 hover:bg-zinc-800"
+          >
+            <span className="w-6 text-center">🎵</span>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-bold text-zinc-300">Suena de fondo</p>
+              <p className="truncate text-xs text-zinc-400">{room.bgm_now}</p>
+            </div>
+          </button>
+        )}
         {queue.length === 0 && !playing && (
           <div className="py-8 text-center">
             <p className="text-4xl">🎤</p>
@@ -374,7 +396,13 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
               }`}
             >
               <button
-                onClick={() => setPreviewReq(r)}
+                onClick={() =>
+                  setPreviewReq({
+                    video_id: r.video_id,
+                    title: r.title,
+                    heading: `${r.singer_name} cantará…`,
+                  })
+                }
                 title="Ver qué canción es"
                 className="flex min-w-0 flex-1 items-center gap-3 text-left"
               >
@@ -431,7 +459,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
       )}
       {previewReq && (
         <Modal
-          title={`${previewReq.singer_name} cantará…`}
+          title={previewReq.heading}
           confirmLabel="▶ Abrir en YouTube"
           onConfirm={() => {
             window.open(`https://www.youtube.com/watch?v=${previewReq.video_id}`, '_blank')
