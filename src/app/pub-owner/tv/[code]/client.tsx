@@ -115,21 +115,31 @@ export default function TvClient({ code }: { code: string }) {
   }, [refresh])
 
   // Queue engine: when nothing is playing, no interlude is running and there
-  // are songs waiting, the TV starts the next one.
+  // are songs waiting, the TV starts the next one. Si la cola estaba vacía,
+  // primero abre el interludio para que el cantante se prepare.
+  const prevQueueLen = useRef(0)
   useEffect(() => {
     if (!started || !room || !hostKey) return
     const interludeLive =
       room.interlude_until && new Date(room.interlude_until).getTime() > Date.now()
     if (!room.current_request_id && !interludeLive && queue.length > 0 && !nextLock.current) {
       nextLock.current = true
-      rpc('karaoke_start_next').then((res) => {
-        if (res?.error) setEngineErr(`start_next: ${res.error.message}`)
-        else setEngineErr('')
-      })
+      if (prevQueueLen.current === 0) {
+        rpc('karaoke_finish_current', { p_outcome: 'done' }).then((res) => {
+          if (res?.error) setEngineErr(`finish_current: ${res.error.message}`)
+          else setEngineErr('')
+        })
+      } else {
+        rpc('karaoke_start_next').then((res) => {
+          if (res?.error) setEngineErr(`start_next: ${res.error.message}`)
+          else setEngineErr('')
+        })
+      }
       setTimeout(() => {
         nextLock.current = false
       }, 2000)
     }
+    prevQueueLen.current = queue.length
   }, [started, room, hostKey, queue.length, now, rpc])
 
   const finish = useCallback(
