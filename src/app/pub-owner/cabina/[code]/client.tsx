@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRoom } from '@/lib/useRoom'
 import { QRImage } from '@/components/QRImage'
+import { Logo } from '@/components/Logo'
 
 export default function CabinaClient({ code }: { code: string }) {
   const { room, requests, bgm, loading, notFound } = useRoom(code)
@@ -115,7 +116,9 @@ export default function CabinaClient({ code }: { code: string }) {
     <main className="mx-auto flex min-h-dvh max-w-2xl flex-col gap-5 bg-zinc-950 p-5 text-zinc-100">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black">🎛️ Cabina · {room.name}</h1>
+          <h1 className="flex items-center gap-2 text-2xl font-black">
+            <Logo className="h-9 w-auto" /> Cabina · {room.name}
+          </h1>
           <p className="font-mono text-sm tracking-[0.3em] text-zinc-400">{code}</p>
         </div>
         <a

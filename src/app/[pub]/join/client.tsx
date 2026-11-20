@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { Logo } from '@/components/Logo'
 
 export default function JoinClient({ pubId }: { pubId: string }) {
   const router = useRouter()
@@ -63,7 +64,8 @@ export default function JoinClient({ pubId }: { pubId: string }) {
     <main className="flex min-h-dvh flex-col items-center justify-center bg-zinc-950 p-6 text-zinc-100">
       <form onSubmit={submit} className="w-full max-w-sm space-y-5 text-center">
         <div>
-          <h1 className="text-3xl font-black">
+          <Logo className="mx-auto h-16 w-auto" />
+          <h1 className="mt-2 text-3xl font-black">
             Karao<span className="text-amber-400">Pub</span>
           </h1>
           <p className="mt-2 text-zinc-400">

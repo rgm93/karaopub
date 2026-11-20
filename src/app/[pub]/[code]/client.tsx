@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRoom } from '@/lib/useRoom'
+import { Logo } from '@/components/Logo'
 import type { KaraokeRequest, SearchResult } from '@/lib/types'
 
 const ERROR_MESSAGES: Record<string, string> = {
@@ -221,6 +222,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
     return (
       <main className="flex min-h-dvh flex-col items-center justify-center bg-zinc-950 p-6 text-zinc-100">
         <form onSubmit={saveName} className="w-full max-w-sm space-y-5 text-center">
+          <Logo className="mx-auto h-20 w-auto" />
           <h1 className="text-3xl font-black">
             Karao<span className="text-amber-400">Pub</span> · {room.name}
           </h1>
@@ -272,7 +274,8 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-5 bg-zinc-950 p-5 text-zinc-100 sm:max-w-lg">
       <header className="text-center">
-        <h1 className="text-xl font-black">
+        <h1 className="flex items-center justify-center gap-2 text-xl font-black">
+          <Logo className="h-8 w-auto" />
           Karao<span className="text-amber-400">Pub</span> · {room.name}
         </h1>
         <p className="text-sm text-zinc-400">Hola, {name} 👋</p>

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { Logo } from '@/components/Logo'
 
 export default function JoinPage() {
   const router = useRouter()
@@ -29,7 +30,8 @@ export default function JoinPage() {
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center gap-6 bg-zinc-950 p-6 text-center text-zinc-100">
       <div>
-        <h1 className="text-4xl font-black">
+        <Logo className="mx-auto h-20 w-auto" />
+        <h1 className="mt-3 text-4xl font-black">
           Karao<span className="text-amber-400">Pub</span>
         </h1>
         <p className="mt-2 text-zinc-400">Escribe el código de la sesión que ves en la pantalla</p>

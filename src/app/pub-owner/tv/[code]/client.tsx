@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRoom } from '@/lib/useRoom'
 import { QRImage } from '@/components/QRImage'
+import { Logo } from '@/components/Logo'
 import { KaraokePlayer } from '@/components/KaraokePlayer'
 import type { PlayerApi } from '@/components/KaraokePlayer'
 
@@ -246,7 +247,8 @@ export default function TvClient({ code }: { code: string }) {
     <main className="relative flex h-dvh flex-col overflow-hidden bg-zinc-950 text-zinc-100">
       {/* ── Cabecera ── */}
       <header className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 lg:px-10 lg:py-5">
-        <h1 className="min-w-0 text-xl font-black lg:text-4xl">
+        <h1 className="flex min-w-0 items-center gap-3 text-xl font-black lg:gap-4 lg:text-4xl">
+          <Logo className="h-9 w-auto lg:h-16" />
           Karao<span className="text-amber-400">Pub</span>
           <span className="ml-4 hidden text-xl font-medium text-zinc-400 sm:inline lg:text-2xl">{room.name}</span>
         </h1>
@@ -419,7 +421,8 @@ export default function TvClient({ code }: { code: string }) {
       {/* ── Overlay: arranque (desbloquea el autoplay con sonido) ── */}
       {(!started || autoplayBlocked) && (
         <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-zinc-950/85 text-center backdrop-blur-sm">
-          <h1 className="text-4xl font-black sm:text-6xl">
+          <Logo className="h-24 w-auto sm:h-32" />
+          <h1 className="mt-2 text-4xl font-black sm:text-6xl">
             Karao<span className="text-amber-400">Pub</span>
           </h1>
           <p className="mt-2 text-lg text-zinc-400 sm:text-2xl">{room.name}</p>

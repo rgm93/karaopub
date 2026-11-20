@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { QRImage } from '@/components/QRImage'
+import { Logo } from '@/components/Logo'
 import type { Room } from '@/lib/types'
 
 type MySession = { code: string; host_key: string; room_id: string; pub_name: string }
@@ -142,7 +143,8 @@ export default function PubOwnerPage() {
     return (
       <main className="flex min-h-dvh flex-col items-center justify-center gap-6 bg-zinc-950 p-6 text-center text-zinc-100">
         <div>
-          <h1 className="text-3xl font-black">
+          <Logo className="mx-auto h-20 w-auto" />
+          <h1 className="mt-2 text-3xl font-black">
             Karao<span className="text-amber-400">Pub</span>
           </h1>
           <p className="mt-2 text-zinc-400">No hay ninguna sesión de karaoke abierta.</p>
@@ -175,7 +177,9 @@ export default function PubOwnerPage() {
     <main className="mx-auto flex min-h-dvh max-w-2xl flex-col gap-6 bg-zinc-950 p-5 text-zinc-100">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black">Karaoke · {session.pub_name}</h1>
+          <h1 className="flex items-center gap-2 text-2xl font-black">
+            <Logo className="h-9 w-auto" /> Karaoke · {session.pub_name}
+          </h1>
           <p className="text-sm text-zinc-400">
             Sesión activa · código{' '}
             <span className="font-mono tracking-[0.3em] text-amber-400">{session.code}</span>
