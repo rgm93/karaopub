@@ -279,6 +279,7 @@ export default function TvClient({ code }: { code: string }) {
               Cola vacía — ¡pide tu canción y serás el siguiente!
             </p>
           )}
+          {nextUp && (
           <div className="mx-auto mt-5 flex max-w-4xl items-center gap-4 lg:max-w-5xl">
             <div className="h-3 flex-1 overflow-hidden rounded-full bg-zinc-800 lg:h-5">
               <div
@@ -298,6 +299,7 @@ export default function TvClient({ code }: { code: string }) {
               {countdown}
             </span>
           </div>
+          )}
         </div>
       )}
 
