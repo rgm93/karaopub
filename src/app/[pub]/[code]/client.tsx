@@ -373,7 +373,6 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
 
       {msg && <p className="rounded-xl bg-zinc-900 p-3 text-center text-sm text-amber-300">{msg}</p>}
 
-      {searching && <p className="text-center text-zinc-400">Buscando en YouTube…</p>}
       {!searching && searched && results.length === 0 && (
         <p className="text-center text-zinc-400">Sin resultados. Prueba con otra canción o artista.</p>
       )}
