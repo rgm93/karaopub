@@ -300,7 +300,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
   }
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-5 bg-zinc-950 p-5 text-zinc-100 sm:max-w-lg">
+    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-5 overflow-x-hidden bg-zinc-950 p-5 text-zinc-100 sm:max-w-lg">
       <header className="text-center">
         <h1 className="flex items-center justify-center gap-2 text-xl font-black">
           <Logo className="h-5 w-auto" />
@@ -378,21 +378,21 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
       )}
 
       {results.length > 0 && (
-        <div className="space-y-2">
+        <div className="min-w-0 space-y-3">
           <p className="text-xs font-bold tracking-widest text-zinc-400">ELIGE LA TUYA</p>
           {results.map((r) => (
             <button
               key={r.videoId}
               onClick={() => (isBlocked(r) ? setBlockedPick(r) : setPendingPick(r))}
-              className="flex w-full items-center gap-3 rounded-xl bg-zinc-900 p-2 text-left hover:bg-zinc-800"
+              className="flex w-full items-center gap-3 rounded-xl bg-zinc-900 p-3 text-left hover:bg-zinc-800"
             >
               {r.thumbnail && (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={r.thumbnail} alt="" className="h-14 w-24 shrink-0 rounded-lg object-cover" />
+                <img src={r.thumbnail} alt="" className="h-16 w-28 shrink-0 rounded-lg object-cover" />
               )}
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium">{r.title}</p>
-                <p className="truncate text-xs text-zinc-400">
+              <div className="min-w-0 flex-1">
+                <p className="line-clamp-2 text-sm font-medium leading-snug">{r.title}</p>
+                <p className="mt-1 truncate text-xs text-zinc-400">
                   {r.channel}
                   {r.durationSeconds
                     ? ` · ${Math.floor(r.durationSeconds / 60)}:${String(r.durationSeconds % 60).padStart(2, '0')}`
