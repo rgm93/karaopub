@@ -19,8 +19,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
 
   const [name, setName] = useState('')
   const [nameSet, setNameSet] = useState(false)
-  const [song, setSong] = useState('')
-  const [artist, setArtist] = useState('')
+  const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchResult[]>([])
   const [searching, setSearching] = useState(false)
   const [searched, setSearched] = useState(false)
@@ -49,12 +48,11 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
 
   const search = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!song.trim()) return
+    if (!query.trim()) return
     setSearching(true)
     setMsg('')
     setSearched(true)
-    const query = [song.trim(), artist.trim()].filter(Boolean).join(' ')
-    const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`)
+    const res = await fetch(`/api/search?q=${encodeURIComponent(query.trim())}`)
     const data = await res.json()
     setResults(data.results ?? [])
     setSearching(false)
@@ -79,8 +77,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
     setMyIds(ids)
     localStorage.setItem(`karaopub_my_${code}`, JSON.stringify(ids))
     setResults([])
-    setSong('')
-    setArtist('')
+    setQuery('')
     setSearched(false)
     setMsg(`¡Apuntada! «${r.title}»`)
   }
@@ -153,19 +150,13 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
 
       <form onSubmit={search} className="space-y-3 rounded-2xl bg-zinc-900 p-4">
         <input
-          value={song}
-          onChange={(e) => setSong(e.target.value)}
-          placeholder="Canción"
-          className="w-full rounded-xl bg-zinc-800 px-4 py-3 outline-none placeholder:text-zinc-500 focus:ring-2 focus:ring-amber-400"
-        />
-        <input
-          value={artist}
-          onChange={(e) => setArtist(e.target.value)}
-          placeholder="Artista (opcional)"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Canción, artista…"
           className="w-full rounded-xl bg-zinc-800 px-4 py-3 outline-none placeholder:text-zinc-500 focus:ring-2 focus:ring-amber-400"
         />
         <button
-          disabled={searching || !song.trim() || !room.accepting_requests}
+          disabled={searching || !query.trim() || !room.accepting_requests}
           className="w-full rounded-xl bg-amber-500 py-3 font-bold text-zinc-950 hover:bg-amber-400 disabled:opacity-40"
         >
           {searching ? 'Buscando…' : 'Buscar karaoke'}
@@ -179,7 +170,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
 
       {searching && <p className="text-center text-zinc-400">Buscando en YouTube…</p>}
       {!searching && searched && results.length === 0 && (
-        <p className="text-center text-zinc-400">Sin resultados. Prueba con el artista.</p>
+        <p className="text-center text-zinc-400">Sin resultados. Prueba a añadir el artista.</p>
       )}
 
       {results.length > 0 && (
