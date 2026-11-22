@@ -246,35 +246,35 @@ export default function TvClient({ code }: { code: string }) {
   return (
     <main className="relative flex h-dvh flex-col overflow-hidden bg-zinc-950 text-zinc-100">
       {/* ── Cabecera ── */}
-      <header className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 lg:px-10 lg:py-5">
-        <h1 className="flex min-w-0 items-center gap-3 text-xl font-black lg:gap-4 lg:text-4xl">
-          <Logo className="h-5 w-auto lg:h-7" />
+      <header className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-10 sm:py-5">
+        <h1 className="flex min-w-0 items-center gap-3 text-xl font-black sm:gap-4 sm:text-4xl">
+          <Logo className="h-5 w-auto sm:h-7" />
           Karao<span className="text-amber-400">Pub</span>
-          <span className="ml-4 hidden text-xl font-medium text-zinc-400 sm:inline lg:text-2xl">{room.name}</span>
+          <span className="ml-4 hidden text-xl font-medium text-zinc-400 sm:inline sm:text-2xl">{room.name}</span>
         </h1>
       </header>
 
       {/* ── Contenido: cola + QR ── */}
-      <div className="flex min-h-0 flex-1 flex-col gap-4 px-4 pb-4 lg:flex-row lg:gap-8 lg:px-8 lg:pb-8">
+      <div className="flex min-h-0 flex-1 flex-col gap-4 px-4 pb-4 sm:flex-row sm:gap-8 sm:px-8 sm:pb-8">
         <section className="min-w-0 flex-1 overflow-hidden">
-          <p className="mb-4 text-sm font-bold tracking-[0.3em] text-zinc-500 lg:text-lg">A CONTINUACIÓN</p>
+          <p className="mb-4 text-sm font-bold tracking-[0.3em] text-zinc-500 sm:text-lg">A CONTINUACIÓN</p>
           {queue.length === 0 && !current && (
-            <div className="flex h-full flex-col items-center justify-center pb-10 text-center lg:pb-16">
-              <p className="text-6xl lg:text-8xl">🎤</p>
-              <p className="mt-4 text-4xl font-black text-zinc-300 lg:text-6xl">La cola está vacía</p>
-              <p className="mt-3 text-xl text-zinc-500 lg:text-3xl">Escanea el QR y pide la primera canción</p>
+            <div className="flex h-full flex-col items-center justify-center pb-10 text-center sm:pb-16">
+              <p className="text-6xl sm:text-8xl">🎤</p>
+              <p className="mt-4 text-4xl font-black text-zinc-300 sm:text-6xl">La cola está vacía</p>
+              <p className="mt-3 text-xl text-zinc-500 sm:text-3xl">Escanea el QR y pide la primera canción</p>
             </div>
           )}
-          <ol className="space-y-3 lg:space-y-4">
+          <ol className="space-y-3 sm:space-y-4">
             {queue.slice(0, 8).map((r, i) => (
               <li
                 key={r.id}
-                className={`flex items-center gap-3 rounded-2xl p-3 lg:gap-6 lg:p-5 ${
+                className={`flex items-center gap-3 rounded-2xl p-3 sm:gap-6 sm:p-5 ${
                   i === 0 ? 'bg-amber-500/15 ring-1 ring-amber-500/50' : 'bg-zinc-900'
                 }`}
               >
                 <span
-                  className={`w-10 text-center text-2xl font-black lg:w-14 lg:text-5xl ${
+                  className={`w-10 text-center text-2xl font-black sm:w-14 sm:text-5xl ${
                     i === 0 ? 'text-amber-400' : 'text-zinc-600'
                   }`}
                 >
@@ -285,36 +285,36 @@ export default function TvClient({ code }: { code: string }) {
                   <img
                     src={r.thumbnail_url}
                     alt=""
-                    className="h-10 w-16 shrink-0 rounded-lg object-cover lg:h-20 lg:w-32"
+                    className="h-10 w-16 shrink-0 rounded-lg object-cover sm:h-20 sm:w-32"
                   />
                 )}
                 <div className="min-w-0">
-                  <p className="truncate text-lg font-bold lg:text-4xl">{r.singer_name}</p>
-                  <p className="truncate text-sm text-zinc-400 lg:text-2xl">{r.title}</p>
+                  <p className="truncate text-lg font-bold sm:text-4xl">{r.singer_name}</p>
+                  <p className="truncate text-sm text-zinc-400 sm:text-2xl">{r.title}</p>
                 </div>
               </li>
             ))}
           </ol>
         </section>
 
-        <aside className="flex w-full min-w-0 shrink-0 flex-row items-center justify-center gap-5 overflow-hidden rounded-2xl bg-zinc-900 p-4 text-center lg:w-1/2 lg:flex-col lg:gap-10 lg:p-10">
+        <aside className="flex w-full min-w-0 shrink-0 flex-row items-center justify-center gap-5 overflow-hidden rounded-2xl bg-zinc-900 p-4 text-center sm:w-1/2 sm:flex-col sm:gap-10 sm:p-10">
           <div className="w-full max-w-[440px] shrink-0 rounded-2xl bg-white p-5 [&_img]:h-auto [&_img]:w-full">
             <QRImage url={guestUrl} size={420} />
           </div>
           <div>
-            <p className="text-xl font-bold lg:text-6xl">Pide tu canción</p>
-            <p className="mt-2 text-sm text-zinc-400 lg:mt-6 lg:text-3xl">
+            <p className="text-xl font-bold sm:text-6xl">Pide tu canción</p>
+            <p className="mt-2 text-sm text-zinc-400 sm:mt-6 sm:text-3xl">
               Escanea el QR o entra en
               <br />
               <span className="font-mono text-zinc-200">karaopub.vercel.app/join</span>
             </p>
-            <p className="mt-3 text-xs text-zinc-500 lg:mt-6 lg:text-2xl">y escribe el código</p>
-            <p className="mt-3 font-mono text-lg font-black tracking-[0.3em] text-amber-400 lg:mt-5 lg:text-7xl">
+            <p className="mt-3 text-xs text-zinc-500 sm:mt-6 sm:text-2xl">y escribe el código</p>
+            <p className="mt-3 font-mono text-lg font-black tracking-[0.3em] text-amber-400 sm:mt-5 sm:text-7xl">
               {code}
             </p>
           </div>
           {!room.accepting_requests && (
-            <p className="rounded-lg bg-red-500/20 px-3 py-1 text-sm text-red-300 lg:px-6 lg:py-3 lg:text-2xl">
+            <p className="rounded-lg bg-red-500/20 px-3 py-1 text-sm text-red-300 sm:px-6 sm:py-3 sm:text-2xl">
               Peticiones pausadas
             </p>
           )}
@@ -323,17 +323,17 @@ export default function TvClient({ code }: { code: string }) {
 
       {/* ── Interludio: la cola sigue visible con barra de progreso ── */}
       {started && interludeActive && !current && nextUp && (
-        <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black via-zinc-950/95 to-transparent px-6 pt-20 pb-6 text-center lg:px-12">
-          <p className="font-mono text-6xl font-black tabular-nums text-amber-400 lg:text-8xl">
+        <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black via-zinc-950/95 to-transparent px-6 pt-20 pb-6 text-center sm:px-12">
+          <p className="font-mono text-6xl font-black tabular-nums text-amber-400 sm:text-8xl">
             {countdown}
           </p>
-          <p className="mt-1 text-xs font-bold tracking-[0.4em] text-amber-400 lg:text-base">
+          <p className="mt-1 text-xs font-bold tracking-[0.4em] text-amber-400 sm:text-base">
             SIGUIENTE TURNO
           </p>
-          <p className="mt-2 text-3xl font-black lg:text-6xl">{nextUp.singer_name}</p>
-          <p className="mt-1 truncate text-lg text-zinc-400 lg:text-3xl">{nextUp.title}</p>
-          <div className="mx-auto mt-5 max-w-4xl lg:max-w-5xl">
-            <div className="h-3 overflow-hidden rounded-full bg-zinc-800 lg:h-5">
+          <p className="mt-2 text-3xl font-black sm:text-6xl">{nextUp.singer_name}</p>
+          <p className="mt-1 truncate text-lg text-zinc-400 sm:text-3xl">{nextUp.title}</p>
+          <div className="mx-auto mt-5 max-w-4xl sm:max-w-5xl">
+            <div className="h-3 overflow-hidden rounded-full bg-zinc-800 sm:h-5">
               <div
                 className="h-full rounded-full bg-amber-400 transition-[width] duration-300 ease-linear"
                 style={{
@@ -361,20 +361,20 @@ export default function TvClient({ code }: { code: string }) {
             onError={() => finish('error')}
             onAutoplayBlocked={() => setAutoplayBlocked(true)}
           />
-          <div className="pointer-events-none absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black/90 to-transparent p-4 pt-24 lg:p-10">
-            <p className="text-sm font-bold tracking-[0.4em] text-amber-400 lg:text-lg">CANTANDO AHORA</p>
-            <p className="mt-1 text-2xl font-black lg:text-5xl">{current.singer_name}</p>
-            <p className="mt-1 truncate text-base text-zinc-300 lg:text-3xl">{current.title}</p>
+          <div className="pointer-events-none absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black/90 to-transparent p-4 pt-24 sm:p-10">
+            <p className="text-sm font-bold tracking-[0.4em] text-amber-400 sm:text-lg">CANTANDO AHORA</p>
+            <p className="mt-1 text-2xl font-black sm:text-5xl">{current.singer_name}</p>
+            <p className="mt-1 truncate text-base text-zinc-300 sm:text-3xl">{current.title}</p>
             {voteStats && (
-              <p className="mt-2 text-lg font-bold text-amber-300 lg:text-3xl">
+              <p className="mt-2 text-lg font-bold text-amber-300 sm:text-3xl">
                 {'★'.repeat(Math.round(voteStats.avg))}
-                <span className="ml-2 text-base text-zinc-300 lg:text-2xl">
+                <span className="ml-2 text-base text-zinc-300 sm:text-2xl">
                   {voteStats.avg.toFixed(1)}/5 · {voteStats.count} voto{voteStats.count === 1 ? '' : 's'}
                 </span>
               </p>
             )}
             {nextUp && (
-              <p className="mt-3 text-sm text-zinc-400 lg:text-xl">
+              <p className="mt-3 text-sm text-zinc-400 sm:text-xl">
                 Después: {nextUp.singer_name} — {nextUp.title}
               </p>
             )}
@@ -394,7 +394,7 @@ export default function TvClient({ code }: { code: string }) {
               onAutoplayBlocked={() => setAutoplayBlocked(true)}
             />
           </div>
-          <p className="absolute bottom-3 left-4 z-10 line-clamp-2 max-w-md rounded-lg bg-zinc-950/80 px-3 py-1.5 text-xs text-zinc-400 lg:bottom-5 lg:left-6 lg:max-w-3xl lg:text-xl">
+          <p className="absolute bottom-3 left-4 z-10 line-clamp-2 max-w-md rounded-lg bg-zinc-950/80 px-3 py-1.5 text-xs text-zinc-400 sm:bottom-5 sm:left-6 sm:max-w-3xl sm:text-xl">
             🎵 Suena de fondo: {bgmVideo.title}
           </p>
         </>
@@ -402,7 +402,7 @@ export default function TvClient({ code }: { code: string }) {
 
       {/* ── Aviso: error del motor / sin clave ── */}
       {(engineErr || (started && !hostKey)) && (
-        <p className="absolute top-16 right-4 left-4 z-50 rounded-xl bg-red-600/90 px-4 py-2 text-center text-sm font-bold lg:top-20">
+        <p className="absolute top-16 right-4 left-4 z-50 rounded-xl bg-red-600/90 px-4 py-2 text-center text-sm font-bold sm:top-20">
           {engineErr ||
             'Sin clave de control — empareja la tele desde el panel del pub o abre el enlace con ?k='}
         </p>
