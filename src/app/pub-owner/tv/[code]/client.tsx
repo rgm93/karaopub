@@ -35,18 +35,26 @@ export default function TvClient({ code }: { code: string }) {
   useEffect(() => {
     const update = () => {
       const vv = window.visualViewport
+      // Área visible real: visualViewport excluye barras del navegador de la tele;
+      // offsetLeft/Top dan su posición por si el área no empieza en (0,0)
+      const vx = vv?.offsetLeft ?? 0
+      const vy = vv?.offsetTop ?? 0
       const vw = vv?.width ?? window.innerWidth
       const vh = vv?.height ?? window.innerHeight
       let s = Math.min(vw / 1366, vh / 768) * tvZoom
+      const el = canvasRef.current
+      if (el) {
+        el.style.left = `${vx + vw / 2}px`
+        el.style.top = `${vy + vh / 2}px`
+      }
       setScale(s)
       // auto-ajuste medido: tras aplicar la escala, si el lienzo sobresale del área
       // visible, lo va reduciendo un 4% por paso hasta que quepa (mín. 0.5×)
       requestAnimationFrame(() => {
-        const el = canvasRef.current
         if (!el) return
         for (let i = 0; i < 10 && s > 0.5; i++) {
           const r = el.getBoundingClientRect()
-          if (r.left >= 0 && r.top >= 0 && r.right <= vw && r.bottom <= vh) break
+          if (r.left >= vx && r.top >= vy && r.right <= vx + vw && r.bottom <= vy + vh) break
           s *= 0.96
           el.style.transform = `translate(-50%, -50%) scale(${s})`
         }
@@ -56,9 +64,11 @@ export default function TvClient({ code }: { code: string }) {
     update()
     window.addEventListener('resize', update)
     window.visualViewport?.addEventListener('resize', update)
+    window.visualViewport?.addEventListener('scroll', update)
     return () => {
       window.removeEventListener('resize', update)
       window.visualViewport?.removeEventListener('resize', update)
+      window.visualViewport?.removeEventListener('scroll', update)
     }
   }, [tvZoom])
 
@@ -284,7 +294,7 @@ export default function TvClient({ code }: { code: string }) {
     <main className="relative h-dvh w-full overflow-hidden bg-zinc-950 text-zinc-100">
       <div
         ref={canvasRef}
-        className="absolute left-1/2 top-1/2 flex h-[768px] w-[1366px] flex-col"
+        className="fixed left-1/2 top-1/2 flex h-[768px] w-[1366px] flex-col overflow-hidden"
         style={{ transform: `translate(-50%, -50%) scale(${scale})` }}
       >
       {/* ── Cabecera ── */}
@@ -339,19 +349,18 @@ export default function TvClient({ code }: { code: string }) {
           </ol>
         </section>
 
-        <aside className="flex w-1/2 min-w-0 shrink-0 flex-col items-center justify-center gap-10 overflow-hidden rounded-2xl bg-zinc-900 p-10 text-center">
-          <div className="w-full max-w-[440px] shrink-0 rounded-2xl bg-white p-5">
-            <QRImage url={guestUrl} size={420} />
+        <aside className="flex w-1/2 min-w-0 shrink-0 flex-col items-center justify-center gap-6 overflow-hidden rounded-2xl bg-zinc-900 p-8 text-center">
+          <div className="w-full max-w-[300px] shrink-0 rounded-2xl bg-white p-4">
+            <QRImage url={guestUrl} size={280} />
           </div>
           <div>
-            <p className="text-6xl font-bold">Pide tu canción</p>
-            <p className="mt-6 text-3xl text-zinc-400">
-              Escanea el QR o entra en
-              <br />
+            <p className="text-5xl font-bold">Pide tu canción</p>
+            <p className="mt-4 text-xl text-zinc-400">
+              Escanea el QR o entra en{' '}
               <span className="font-mono text-zinc-200">karaopub.vercel.app/join</span>
             </p>
-            <p className="mt-6 text-2xl text-zinc-500">y escribe el código</p>
-            <p className="mt-5 font-mono text-7xl font-black tracking-[0.3em] text-amber-400">
+            <p className="mt-4 text-lg text-zinc-500">y escribe el código</p>
+            <p className="mt-3 font-mono text-5xl font-black tracking-[0.3em] text-amber-400">
               {code}
             </p>
           </div>
