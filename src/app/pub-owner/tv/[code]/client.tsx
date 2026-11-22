@@ -29,8 +29,9 @@ export default function TvClient({ code }: { code: string }) {
   // da igual la resolución CSS que reporte el navegador de la TV.
   const [scale, setScale] = useState(1)
   useEffect(() => {
+    // Margen 0.92: las teles recortan bordes (overscan) y reportan más área de la visible
     const update = () =>
-      setScale(Math.min(window.innerWidth / 1366, window.innerHeight / 768))
+      setScale(Math.min(window.innerWidth / 1366, window.innerHeight / 768) * 0.92)
     update()
     window.addEventListener('resize', update)
     return () => window.removeEventListener('resize', update)
