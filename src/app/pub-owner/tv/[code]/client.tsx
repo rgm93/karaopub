@@ -27,15 +27,17 @@ export default function TvClient({ code }: { code: string }) {
 
   // Lienzo 1366×768 escalado al área visible real (scale-to-fit automático):
   // 1) usa visualViewport (excluye barras del navegador de la tele)
-  // 2) mide el resultado y lo reduce en pasos si aún sobresale (overscan, zoom…)
+  // 2) factor tv_zoom de la sala (el pub lo calibra desde la cabina, 0.94 por defecto)
+  // 3) mide el resultado y lo reduce en pasos si aún sobresale (overscan, zoom…)
   const canvasRef = useRef<HTMLDivElement>(null)
   const [scale, setScale] = useState(1)
+  const tvZoom = room?.tv_zoom ?? 0.94
   useEffect(() => {
     const update = () => {
       const vv = window.visualViewport
       const vw = vv?.width ?? window.innerWidth
       const vh = vv?.height ?? window.innerHeight
-      let s = Math.min(vw / 1366, vh / 768) * 0.94
+      let s = Math.min(vw / 1366, vh / 768) * tvZoom
       setScale(s)
       // auto-ajuste medido: tras aplicar la escala, si el lienzo sobresale del área
       // visible, lo va reduciendo un 4% por paso hasta que quepa (mín. 0.5×)
@@ -58,7 +60,7 @@ export default function TvClient({ code }: { code: string }) {
       window.removeEventListener('resize', update)
       window.visualViewport?.removeEventListener('resize', update)
     }
-  }, [])
+  }, [tvZoom])
 
   useEffect(() => {
     // La URL del QR se compone cuando cargue la sala (necesita pub_id)

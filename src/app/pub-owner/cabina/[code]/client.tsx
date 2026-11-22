@@ -484,6 +484,39 @@ export default function CabinaClient({ code }: { code: string }) {
           >
             Copiar enlace directo
           </button>
+          <div className="mt-4 border-t border-zinc-800 pt-3">
+            <p className="text-xs font-bold tracking-widest text-zinc-500">
+              TAMAÑO EN PANTALLA
+            </p>
+            <p className="mt-1 text-xs text-zinc-500">
+              Si se ve cortado o demasiado grande en tu tele
+            </p>
+            <div className="mt-2 flex items-center justify-center gap-3">
+              <button
+                onClick={() =>
+                  rpc('karaoke_set_tv_zoom', {
+                    p_zoom: Math.max(0.4, Math.round(((room.tv_zoom ?? 0.94) - 0.05) * 100) / 100),
+                  })
+                }
+                className="w-10 rounded-xl bg-zinc-800 py-2 font-black hover:bg-zinc-700"
+              >
+                −
+              </button>
+              <span className="w-14 font-mono text-xl font-black text-amber-400">
+                {Math.round((room.tv_zoom ?? 0.94) * 100)}%
+              </span>
+              <button
+                onClick={() =>
+                  rpc('karaoke_set_tv_zoom', {
+                    p_zoom: Math.min(1.2, Math.round(((room.tv_zoom ?? 0.94) + 0.05) * 100) / 100),
+                  })
+                }
+                className="w-10 rounded-xl bg-zinc-800 py-2 font-black hover:bg-zinc-700"
+              >
+                +
+              </button>
+            </div>
+          </div>
         </div>
       </section>
     </main>

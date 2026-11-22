@@ -17,6 +17,7 @@ export type Room = {
   bgm_now: string | null
   bgm_now_id: string | null
   bgm_shuffle: boolean
+  tv_zoom: number
   bgm_play_id: string | null
   bgm_play_seq: number
   bgm_cmd: string | null
