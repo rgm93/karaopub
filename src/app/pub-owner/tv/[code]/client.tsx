@@ -29,9 +29,12 @@ export default function TvClient({ code }: { code: string }) {
   // da igual la resolución CSS que reporte el navegador de la TV.
   const [scale, setScale] = useState(1)
   useEffect(() => {
-    // Margen 0.92: las teles recortan bordes (overscan) y reportan más área de la visible
-    const update = () =>
-      setScale(Math.min(window.innerWidth / 1366, window.innerHeight / 768) * 0.92)
+    // Margen 0.92 por defecto (overscan de las teles); se puede ajustar con ?zoom=0.8 en la URL
+    const update = () => {
+      const z = Number(new URLSearchParams(window.location.search).get('zoom'))
+      const factor = z > 0.4 && z <= 1.2 ? z : 0.92
+      setScale(Math.min(window.innerWidth / 1366, window.innerHeight / 768) * factor)
+    }
     update()
     window.addEventListener('resize', update)
     return () => window.removeEventListener('resize', update)
