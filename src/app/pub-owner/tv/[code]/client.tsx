@@ -25,19 +25,39 @@ export default function TvClient({ code }: { code: string }) {
   const lastCmdSeq = useRef<number | null>(null)
   const lastBgmCmdSeq = useRef<number | null>(null)
 
-  // Lienzo 1366×768 escalado al viewport real de la tele (scale-to-fit):
-  // da igual la resolución CSS que reporte el navegador de la TV.
+  // Lienzo 1366×768 escalado al área visible real (scale-to-fit automático):
+  // 1) usa visualViewport (excluye barras del navegador de la tele)
+  // 2) mide el resultado y lo reduce en pasos si aún sobresale (overscan, zoom…)
+  const canvasRef = useRef<HTMLDivElement>(null)
   const [scale, setScale] = useState(1)
   useEffect(() => {
-    // Margen 0.92 por defecto (overscan de las teles); se puede ajustar con ?zoom=0.8 en la URL
     const update = () => {
-      const z = Number(new URLSearchParams(window.location.search).get('zoom'))
-      const factor = z > 0.4 && z <= 1.2 ? z : 0.92
-      setScale(Math.min(window.innerWidth / 1366, window.innerHeight / 768) * factor)
+      const vv = window.visualViewport
+      const vw = vv?.width ?? window.innerWidth
+      const vh = vv?.height ?? window.innerHeight
+      let s = Math.min(vw / 1366, vh / 768) * 0.94
+      setScale(s)
+      // auto-ajuste medido: tras aplicar la escala, si el lienzo sobresale del área
+      // visible, lo va reduciendo un 4% por paso hasta que quepa (mín. 0.5×)
+      requestAnimationFrame(() => {
+        const el = canvasRef.current
+        if (!el) return
+        for (let i = 0; i < 10 && s > 0.5; i++) {
+          const r = el.getBoundingClientRect()
+          if (r.left >= 0 && r.top >= 0 && r.right <= vw && r.bottom <= vh) break
+          s *= 0.96
+          el.style.transform = `translate(-50%, -50%) scale(${s})`
+        }
+        setScale(s)
+      })
     }
     update()
     window.addEventListener('resize', update)
-    return () => window.removeEventListener('resize', update)
+    window.visualViewport?.addEventListener('resize', update)
+    return () => {
+      window.removeEventListener('resize', update)
+      window.visualViewport?.removeEventListener('resize', update)
+    }
   }, [])
 
   useEffect(() => {
@@ -261,6 +281,7 @@ export default function TvClient({ code }: { code: string }) {
   return (
     <main className="relative h-dvh w-full overflow-hidden bg-zinc-950 text-zinc-100">
       <div
+        ref={canvasRef}
         className="absolute left-1/2 top-1/2 flex h-[768px] w-[1366px] flex-col"
         style={{ transform: `translate(-50%, -50%) scale(${scale})` }}
       >
