@@ -43,7 +43,7 @@ export default function SignInPage() {
         <div className="text-center">
           <Logo className="mx-auto h-9 w-auto" />
           <h1 className="mt-2 text-3xl font-black">
-            Karao<span className="text-amber-400">Pub</span>
+            <span>Karao<span className="text-amber-400">Pub</span></span>
           </h1>
           <p className="mt-2 text-sm text-zinc-400">Entra con tu cuenta de Pubify</p>
         </div>

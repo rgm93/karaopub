@@ -66,7 +66,7 @@ export default function JoinClient({ pubId }: { pubId: string }) {
         <div>
           <Logo className="mx-auto h-9 w-auto" />
           <h1 className="mt-2 text-3xl font-black">
-            Karao<span className="text-amber-400">Pub</span>
+            <span>Karao<span className="text-amber-400">Pub</span></span>
           </h1>
           <p className="mt-2 text-zinc-400">
             {pubName ? `en ${pubName}` : '…'}

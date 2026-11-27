@@ -32,7 +32,7 @@ export default function JoinPage() {
       <div>
         <Logo className="mx-auto h-10 w-auto" />
         <h1 className="mt-3 text-4xl font-black">
-          Karao<span className="text-amber-400">Pub</span>
+          <span>Karao<span className="text-amber-400">Pub</span></span>
         </h1>
         <p className="mt-2 text-zinc-400">Escribe el código de la sesión que ves en la pantalla</p>
       </div>

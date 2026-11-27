@@ -329,7 +329,7 @@ export default function TvClient({ code }: { code: string }) {
       <header className="flex flex-wrap items-center justify-between gap-4 px-10 py-5">
         <h1 className="flex min-w-0 items-center gap-4 text-4xl font-black">
           <Logo className="h-7 w-auto" />
-          Karao<span className="text-amber-400">Pub</span>
+          <span>Karao<span className="text-amber-400">Pub</span></span>
           <span className="ml-4 flex items-center gap-3 text-2xl font-medium text-zinc-400">
             {room.logo_url && (
               // eslint-disable-next-line @next/next/no-img-element
@@ -338,6 +338,11 @@ export default function TvClient({ code }: { code: string }) {
             {room.name}
           </span>
         </h1>
+        {room.promo_text && (
+          <p className="max-w-[480px] truncate rounded-full bg-amber-500/15 px-6 py-2.5 text-2xl font-black text-amber-300 ring-1 ring-amber-500/40">
+            {room.promo_text}
+          </p>
+        )}
       </header>
 
       {/* ── Contenido: cola + QR ── */}
@@ -524,7 +529,7 @@ export default function TvClient({ code }: { code: string }) {
         <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-zinc-950/85 text-center backdrop-blur-sm">
           <Logo className="h-16 w-auto" />
           <h1 className="mt-2 text-6xl font-black">
-            Karao<span className="text-amber-400">Pub</span>
+            <span>Karao<span className="text-amber-400">Pub</span></span>
           </h1>
           <p className="mt-2 text-2xl text-zinc-400">{room.name}</p>
           <button

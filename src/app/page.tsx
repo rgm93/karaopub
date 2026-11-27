@@ -53,7 +53,7 @@ function IPhoneMock() {
           {/* UI de la app */}
           <div className="space-y-2 p-2.5 pt-4 text-left">
             <p className="text-center text-[10px] font-black">
-              Karao<span className="text-amber-400">Pub</span>{' '}
+              <span>Karao<span className="text-amber-400">Pub</span></span>{' '}
               <span className="font-normal text-zinc-500">· Pub Raymi</span>
             </p>
             <p className="text-center text-[8px] text-zinc-500">Hola, Rubén 👋</p>
@@ -205,7 +205,7 @@ export default function Home() {
       <section className="mx-auto flex max-w-5xl flex-col items-center px-6 pt-20 pb-16 text-center">
         <Logo className="h-12 w-auto" />
         <h1 className="mt-6 text-5xl font-black sm:text-6xl">
-          Karao<span className="text-amber-400">Pub</span>
+          <span>Karao<span className="text-amber-400">Pub</span></span>
         </h1>
         <p className="mt-4 max-w-xl text-lg text-zinc-400 sm:text-xl">
           El karaoke de tu bar. Tus clientes piden canciones desde el móvil, la tele las pone por

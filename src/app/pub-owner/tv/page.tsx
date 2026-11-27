@@ -37,7 +37,7 @@ export default function TvPairPage() {
       <div>
         <Logo className="mx-auto h-10 w-auto" />
         <h1 className="mt-3 text-4xl font-black">
-          Karao<span className="text-amber-400">Pub</span> · TV
+          <span>Karao<span className="text-amber-400">Pub</span></span> · TV
         </h1>
         <p className="mt-2 max-w-sm text-zinc-400">
           En el panel del pub pulsa «Emparejar tele» y escribe aquí el código de 6 dígitos

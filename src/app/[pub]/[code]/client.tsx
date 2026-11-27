@@ -327,7 +327,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
         <form onSubmit={saveName} className="w-full max-w-sm space-y-5 text-center">
           <Logo className="mx-auto h-10 w-auto" />
           <h1 className="text-3xl font-black">
-            Karao<span className="text-amber-400">Pub</span> · {room.name}
+            <span>Karao<span className="text-amber-400">Pub</span></span> · {room.name}
           </h1>
           <p className="text-lg text-zinc-400">{t.namePrompt}</p>
           <input
@@ -399,7 +399,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
         <div className="flex items-center justify-center gap-3">
           <h1 className="flex items-center justify-center gap-2 text-xl font-black">
             <Logo className="h-5 w-auto" />
-            Karao<span className="text-amber-400">Pub</span> · {room.name}
+            <span>Karao<span className="text-amber-400">Pub</span></span> · {room.name}
           </h1>
           <button
             onClick={() => {
