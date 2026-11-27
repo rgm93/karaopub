@@ -1,13 +1,13 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRoom } from '@/lib/useRoom'
 import { Logo } from '@/components/Logo'
 import { YtPreview } from '@/components/YtPreview'
 import { STR, type Lang } from '@/lib/i18n'
 import type { KaraokeRequest, SearchResult } from '@/lib/types'
-import { cleanTitle } from '@/lib/cleanTitle'
+import { cleanTitle, songKey } from '@/lib/cleanTitle'
 
 const ERROR_MESSAGES: Record<string, string> = {
   room_not_found: 'La sala no existe.',
@@ -90,6 +90,10 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
   const [showSung, setShowSung] = useState(false)
   const [sung, setSung] = useState<KaraokeRequest[] | null>(null)
   const [sungFilter, setSungFilter] = useState<'all' | 'mine'>('all')
+  const [sungPick, setSungPick] = useState<{
+    pick: SearchResult
+    singer: string
+  } | null>(null)
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchResult[]>([])
   const [searching, setSearching] = useState(false)
@@ -125,10 +129,11 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
     }
   }, [pendingPick])
 
-  // Historial de cantadas de la sesión: se carga al abrir el modal
+  // Historial de cantadas: se carga en segundo plano (marca "ya sonada" en el
+  // buscador) y se refresca cada vez que cambia la cola — cuando una canción
+  // termina, la lista de requests cambia y recargamos
   useEffect(() => {
-    if (!showSung || !room) return
-    setSung(null)
+    if (!room) return
     supabase
       .from('karaoke_requests')
       .select('*')
@@ -137,7 +142,31 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
       .order('played_at', { ascending: false })
       .limit(50)
       .then(({ data }) => setSung((data ?? []) as KaraokeRequest[]))
-  }, [showSung, room])
+  }, [room, requests])
+
+  // "Ya ha sonado": compara por título+artista normalizado (no por vídeo) —
+  // misma canción en otro canal de karaoke también se detecta
+  const wasSung = useMemo(() => {
+    const sungKeys = (sung ?? []).map((r) => ({ key: songKey(r.title), req: r }))
+    return (pick: SearchResult): KaraokeRequest | null => {
+      const k = songKey(pick.title)
+      const ws = new Set(k.split(' ').filter(Boolean))
+      if (ws.size === 0) return null
+      for (const s of sungKeys) {
+        if (s.key === k) return s.req
+        const w2 = new Set(s.key.split(' ').filter(Boolean))
+        if (w2.size === 0) continue
+        const inter = [...ws].filter((w) => w2.has(w)).length
+        const union = ws.size + w2.size - inter
+        if (
+          (inter >= 2 && inter === Math.min(ws.size, w2.size)) ||
+          inter / union >= 0.7
+        )
+          return s.req
+      }
+      return null
+    }
+  }, [sung])
 
   useEffect(() => {
     if (!('Notification' in window)) setNotifPerm('unsupported')
@@ -573,27 +602,43 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
       {results.length > 0 && (
         <div className="min-w-0 space-y-3">
           <p className="text-xs font-bold tracking-widest text-zinc-400">{t.pickYours}</p>
-          {results.map((r) => (
-            <button
-              key={r.videoId}
-              onClick={() => (isBlocked(r) ? setBlockedPick(r) : setPendingPick(r))}
-              className="flex w-full items-center gap-3 rounded-xl bg-zinc-900 p-3 text-left hover:bg-zinc-800"
-            >
-              {r.thumbnail && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={r.thumbnail} alt="" className="h-16 w-28 shrink-0 rounded-lg object-cover" />
-              )}
-              <div className="min-w-0 flex-1">
-                <p className="line-clamp-2 text-sm font-medium leading-snug">{cleanTitle(r.title)}</p>
-                <p className="mt-1 truncate text-xs text-zinc-400">
-                  {r.channel}
-                  {r.durationSeconds
-                    ? ` · ${Math.floor(r.durationSeconds / 60)}:${String(r.durationSeconds % 60).padStart(2, '0')}`
-                    : ''}
-                </p>
-              </div>
-            </button>
-          ))}
+          {results.map((r) => {
+            const sungHit = wasSung(r)
+            return (
+              <button
+                key={r.videoId}
+                onClick={() =>
+                  isBlocked(r)
+                    ? setBlockedPick(r)
+                    : sungHit
+                      ? setSungPick({ pick: r, singer: sungHit.singer_name })
+                      : setPendingPick(r)
+                }
+                className={`flex w-full items-center gap-3 rounded-xl p-3 text-left hover:bg-zinc-800 ${
+                  sungHit ? 'bg-zinc-900/50 opacity-60' : 'bg-zinc-900'
+                }`}
+              >
+                {r.thumbnail && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={r.thumbnail} alt="" className="h-16 w-28 shrink-0 rounded-lg object-cover" />
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="line-clamp-2 text-sm font-medium leading-snug">{cleanTitle(r.title)}</p>
+                  <p className="mt-1 truncate text-xs text-zinc-400">
+                    {r.channel}
+                    {r.durationSeconds
+                      ? ` · ${Math.floor(r.durationSeconds / 60)}:${String(r.durationSeconds % 60).padStart(2, '0')}`
+                      : ''}
+                  </p>
+                </div>
+                {sungHit && (
+                  <span className="shrink-0 rounded-full bg-zinc-800 px-3 py-1 text-xs font-black tracking-wide text-amber-400">
+                    {t.sungBadge}
+                  </span>
+                )}
+              </button>
+            )
+          })}
         </div>
       )}
 
@@ -772,7 +817,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
                       const pick = reqToPick(r)
                       setShowSung(false)
                       if (isBlocked(pick)) setBlockedPick(pick)
-                      else setPendingPick(pick)
+                      else setSungPick({ pick, singer: r.singer_name })
                     }}
                     className="flex w-full items-center gap-3 rounded-xl bg-zinc-800/60 p-3 text-left hover:bg-zinc-800"
                   >
@@ -805,6 +850,19 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
             </button>
           </div>
         </div>
+      )}
+      {sungPick && (
+        <Modal
+          title={t.sungTitle}
+          confirmLabel={t.searchAnother}
+          onConfirm={() => setSungPick(null)}
+          onClose={() => setSungPick(null)}
+        >
+          <p className="font-bold text-zinc-200">{cleanTitle(sungPick.pick.title)}</p>
+          <p className="mt-1">
+            {t.sungBy} {sungPick.singer} — {t.pickAnother}
+          </p>
+        </Modal>
       )}
       {blockedPick && (
         <Modal
