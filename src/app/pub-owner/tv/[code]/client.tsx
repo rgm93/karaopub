@@ -357,7 +357,7 @@ export default function TvClient({ code }: { code: string }) {
       {/* ── Cuenta atrás: tira a todo lo ancho bajo la cabecera,
           fuera de las columnas — la cola y el QR se ven completos ── */}
       {started && interludeActive && !current && nextUp && (
-        <div className="mx-8 mb-2 flex items-center gap-6 rounded-2xl bg-zinc-900 px-6 py-3 ring-1 ring-amber-500/40">
+        <div className="mx-8 mb-6 flex items-center gap-6 rounded-2xl bg-zinc-900 px-6 py-3 ring-1 ring-amber-500/40">
           <p className="font-mono text-5xl font-black tabular-nums text-amber-400">
             {countdown}
           </p>
