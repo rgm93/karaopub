@@ -356,29 +356,67 @@ export default function TvClient({ code }: { code: string }) {
 
       {/* ── Contenido: cola + QR ── */}
       <div className="flex min-h-0 flex-1 flex-row gap-8 px-8 pb-8">
-        <section className="min-w-0 flex-1 overflow-hidden">
+        <section className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
           <p className="mb-4 text-lg font-bold tracking-[0.3em] text-zinc-500">A CONTINUACIÓN</p>
           {queue.length === 0 && !current && (
-            <div className="flex h-full flex-col items-center justify-center pb-16 text-center">
+            <div className="flex flex-1 flex-col items-center justify-center pb-16 text-center">
               <p className="text-8xl">🎤</p>
               <p className="mt-4 text-6xl font-black text-zinc-300">La cola está vacía</p>
               <p className="mt-3 text-3xl text-zinc-500">Escanea el QR y pide la primera canción</p>
             </div>
           )}
-          <ol className="space-y-4">
-            {queue.slice(0, 8).map((r, i) => (
+          {/* Cuenta atrás en flujo: nunca tapa la cola. El siguiente (queue[0])
+              ya sale dentro de la tarjeta, así que se omite en la lista */}
+          {started && interludeActive && !current && nextUp && (
+            <div className="mb-4 shrink-0 rounded-3xl bg-zinc-900 p-5 text-center ring-1 ring-amber-500/40">
+              <div className="flex items-center justify-center gap-6">
+                <p className="font-mono text-7xl font-black tabular-nums text-amber-400">
+                  {countdown}
+                </p>
+                <div className="min-w-0 text-left">
+                  <p className="text-sm font-bold tracking-[0.4em] text-amber-400">
+                    SIGUIENTE TURNO
+                  </p>
+                  <p className="mt-1 truncate text-4xl font-black">{nextUp.singer_name}</p>
+                  <p className="truncate text-xl text-zinc-400">{cleanTitle(nextUp.title)}</p>
+                </div>
+              </div>
+              <div className="mt-4 h-4 overflow-hidden rounded-full bg-zinc-800">
+                <div
+                  className="h-full rounded-full bg-amber-400 transition-[width] duration-300 ease-linear"
+                  style={{
+                    width: `${Math.min(
+                      100,
+                      Math.max(
+                        0,
+                        (1 - (countdown ?? 0) / Math.max(1, room.interlude_seconds)) * 100,
+                      ),
+                    )}%`,
+                  }}
+                />
+              </div>
+            </div>
+          )}
+          <ol className="min-h-0 flex-1 space-y-4 overflow-hidden">
+            {queue
+              .slice(interludeActive && !current && nextUp ? 1 : 0, 8)
+              .map((r, i) => (
               <li
                 key={r.id}
                 className={`flex items-center gap-6 rounded-2xl p-5 ${
-                  i === 0 ? 'bg-amber-500/15 ring-1 ring-amber-500/50' : 'bg-zinc-900'
+                  i === 0 && !(interludeActive && !current)
+                    ? 'bg-amber-500/15 ring-1 ring-amber-500/50'
+                    : 'bg-zinc-900'
                 }`}
               >
                 <span
                   className={`w-14 text-center text-5xl font-black ${
-                    i === 0 ? 'text-amber-400' : 'text-zinc-600'
+                    i === 0 && !(interludeActive && !current)
+                      ? 'text-amber-400'
+                      : 'text-zinc-600'
                   }`}
                 >
-                  {i + 1}
+                  {i + (interludeActive && !current && nextUp ? 2 : 1)}
                 </span>
                 {r.thumbnail_url && (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -422,36 +460,6 @@ export default function TvClient({ code }: { code: string }) {
           )}
         </aside>
       </div>
-
-      {/* ── Interludio: la cola sigue visible con barra de progreso ── */}
-      {started && interludeActive && !current && nextUp && (
-        <div className="absolute bottom-8 left-8 z-20 w-[46%] rounded-3xl bg-zinc-950/95 p-8 text-center ring-1 ring-zinc-800">
-          <p className="font-mono text-8xl font-black tabular-nums text-amber-400">
-            {countdown}
-          </p>
-          <p className="mt-1 text-base font-bold tracking-[0.4em] text-amber-400">
-            SIGUIENTE TURNO
-          </p>
-          <p className="mt-2 text-6xl font-black">{nextUp.singer_name}</p>
-          <p className="mt-1 truncate text-3xl text-zinc-400">{cleanTitle(nextUp.title)}</p>
-          <div className="mx-auto mt-5 max-w-5xl">
-            <div className="h-5 overflow-hidden rounded-full bg-zinc-800">
-              <div
-                className="h-full rounded-full bg-amber-400 transition-[width] duration-300 ease-linear"
-                style={{
-                  width: `${Math.min(
-                    100,
-                    Math.max(
-                      0,
-                      (1 - (countdown ?? 0) / Math.max(1, room.interlude_seconds)) * 100,
-                    ),
-                  )}%`,
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ── Overlay: reproduciendo ── */}
       {started && current && doneId !== current.id && (

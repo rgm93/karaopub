@@ -633,11 +633,7 @@ export default function CabinaClient({ code }: { code: string }) {
             </p>
             <div className="mt-2 flex items-center justify-center gap-3">
               <button
-                onClick={() =>
-                  rpc('karaoke_set_tv_zoom', {
-                    p_zoom: Math.max(0.4, Math.round(((room.tv_zoom ?? 0.94) - 0.05) * 100) / 100),
-                  })
-                }
+                onClick={() => rpc('karaoke_set_tv_zoom', { p_delta: -0.05 })}
                 className="w-10 rounded-xl bg-zinc-800 py-2 font-black hover:bg-zinc-700"
               >
                 −
@@ -646,11 +642,7 @@ export default function CabinaClient({ code }: { code: string }) {
                 {Math.round((room.tv_zoom ?? 0.94) * 100)}%
               </span>
               <button
-                onClick={() =>
-                  rpc('karaoke_set_tv_zoom', {
-                    p_zoom: Math.min(1.2, Math.round(((room.tv_zoom ?? 0.94) + 0.05) * 100) / 100),
-                  })
-                }
+                onClick={() => rpc('karaoke_set_tv_zoom', { p_delta: 0.05 })}
                 className="w-10 rounded-xl bg-zinc-800 py-2 font-black hover:bg-zinc-700"
               >
                 +
