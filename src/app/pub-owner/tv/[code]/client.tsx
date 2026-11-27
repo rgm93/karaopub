@@ -450,11 +450,6 @@ export default function TvClient({ code }: { code: string }) {
               />
             </div>
           </div>
-          {bgmVideo && (
-            <p className="mt-4 truncate text-xl text-zinc-500">
-              🎵 Suena de fondo: {cleanTitle(bgmVideo.title)}
-            </p>
-          )}
         </div>
       )}
 
@@ -518,11 +513,10 @@ export default function TvClient({ code }: { code: string }) {
               onAutoplayBlocked={() => setAutoplayBlocked(true)}
             />
           </div>
-          {!(interludeActive && nextUp) && (
-            <p className="absolute bottom-5 left-6 z-10 line-clamp-2 max-w-3xl rounded-lg bg-zinc-950/80 px-3 py-1.5 text-xl text-zinc-400">
-              🎵 Suena de fondo: {cleanTitle(bgmVideo.title)}
-            </p>
-          )}
+          {/* Tira a todo lo ancho pegada al borde inferior: nunca queda tapada */}
+          <p className="absolute inset-x-0 bottom-0 z-30 truncate bg-zinc-950/90 px-6 py-1.5 text-center text-lg text-zinc-400">
+            🎵 Suena de fondo: {cleanTitle(bgmVideo.title)}
+          </p>
         </>
       )}
 

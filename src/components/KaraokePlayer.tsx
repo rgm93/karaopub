@@ -10,6 +10,7 @@ type YTPlayer = {
   seekTo: (seconds: number, allowSeekAhead?: boolean) => void
   getDuration: () => number
   setVolume: (v: number) => void
+  unloadModule?: (m: string) => void
   destroy: () => void
 }
 
@@ -105,9 +106,12 @@ export function KaraokePlayer({ videoId, apiRef, onEnded, onError, onAutoplayBlo
           iv_load_policy: 3,
           disablekb: 1,
           fs: 0,
+          cc_load_policy: 0,
         },
         events: {
           onReady: () => {
+            // Quita el módulo de subtítulos del embed (no queremos CC en la tele)
+            playerRef.current?.unloadModule?.('captions')
             if (mounted) setReady(true)
           },
           onStateChange: (e) => {
