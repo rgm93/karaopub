@@ -108,9 +108,12 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
     heading: string
   } | null>(null)
 
-  // Resetea el estado del preview cada vez que se abre el modal
+  // Resetea el estado del preview y el dúo cada vez que se abre el modal
   useEffect(() => {
-    if (pendingPick) setPickStatus('loading')
+    if (pendingPick) {
+      setPickStatus('loading')
+      setDuet('')
+    }
   }, [pendingPick])
 
   useEffect(() => {
@@ -144,7 +147,10 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
 
   const queue = requests.filter((r) => r.status === 'queued')
   const playing = requests.find((r) => r.status === 'playing') ?? null
-  const imNext = queue.length > 0 && myIds.includes(queue[0].id)
+  const imNext =
+    queue.length > 0 &&
+    myIds.includes(queue[0].id) &&
+    !(playing && myIds.includes(playing.id))
   const requestsClosed =
     !!room?.requests_close_at && new Date(room.requests_close_at).getTime() <= Date.now()
 
@@ -209,10 +215,8 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
     setNameSet(true)
   }
 
-  // Nombre final en la cola: emoji opcional + dúo opcional
-  const stageName = [emoji, name.trim(), duet.trim() ? `& ${duet.trim()}` : '']
-    .filter(Boolean)
-    .join(' ')
+  // Nombre base en la cola: emoji opcional; el dúo se decide por canción en el modal
+  const stageName = [emoji, name.trim()].filter(Boolean).join(' ')
 
   const vote = async (score: number) => {
     if (!playing || !deviceKey) return
@@ -250,7 +254,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
     setMsg('')
     const { data, error } = await supabase.rpc('karaoke_add_request', {
       p_code: code,
-      p_singer: stageName,
+      p_singer: stageName + (duet.trim() ? ` & ${duet.trim()}` : ''),
       p_singer_key: deviceKey,
       p_video_id: r.videoId,
       p_title: r.title,
@@ -336,13 +340,6 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
             maxLength={40}
             autoFocus
             className="w-full rounded-xl bg-zinc-800 px-4 py-4 text-center text-xl outline-none placeholder:text-zinc-500 focus:ring-2 focus:ring-amber-400"
-          />
-          <input
-            value={duet}
-            onChange={(e) => setDuet(e.target.value)}
-            placeholder={t.duetPlaceholder}
-            maxLength={40}
-            className="w-full rounded-xl bg-zinc-800 px-4 py-3 text-center text-base outline-none placeholder:text-zinc-500 focus:ring-2 focus:ring-amber-400"
           />
           <div>
             <p className="mb-2 text-xs font-bold tracking-widest text-zinc-500">
@@ -465,15 +462,20 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
           )}
           <p className="mt-1 font-bold">{playing.singer_name}</p>
           <p className="text-sm text-zinc-300">{playing.title}</p>
-          <button
-            onClick={applaud}
-            className="mt-3 rounded-xl bg-zinc-800 px-5 py-2 text-sm font-bold transition-transform hover:bg-zinc-700 active:scale-110"
-          >
-            {t.applaud}
-            {playing.applause > 0 && (
-              <span className="ml-1.5 text-amber-400">{playing.applause}</span>
-            )}
-          </button>
+          {!myIds.includes(playing.id) && (
+            <button
+              onClick={applaud}
+              className="mt-3 rounded-xl bg-zinc-800 px-5 py-2 text-sm font-bold transition-transform hover:bg-zinc-700 active:scale-110"
+            >
+              {t.applaud}
+              {playing.applause > 0 && (
+                <span className="ml-1.5 text-amber-400">{playing.applause}</span>
+              )}
+            </button>
+          )}
+          {myIds.includes(playing.id) && playing.applause > 0 && (
+            <p className="mt-3 text-sm text-zinc-400">👏 {playing.applause}</p>
+          )}
           {room.voting_enabled && (
             <div className="mt-3">
               <p className="text-xs text-zinc-400">{t.howIsItGoing}</p>
@@ -688,6 +690,41 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
               {pendingPick.channel} · {t.previewHint}
             </p>
           )}
+          <input
+            value={duet}
+            onChange={(e) => setDuet(e.target.value)}
+            placeholder={t.duetPlaceholder}
+            maxLength={40}
+            className="mt-3 w-full rounded-xl bg-zinc-800 px-4 py-2.5 text-center text-sm outline-none placeholder:text-zinc-500 focus:ring-2 focus:ring-amber-400"
+          />
+          {(() => {
+            const others = [
+              ...new Set(
+                requests
+                  .filter((r) => r.status === 'queued' || r.status === 'playing')
+                  .map((r) => r.singer_name),
+              ),
+            ].filter((n) => n !== stageName && !n.includes('&'))
+            if (others.length === 0) return null
+            return (
+              <div className="mt-2 flex flex-wrap justify-center gap-1.5">
+                {others.slice(0, 6).map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => setDuet(duet === n ? '' : n)}
+                    className={`rounded-lg px-2.5 py-1 text-xs font-bold ${
+                      duet === n
+                        ? 'bg-amber-500/30 text-amber-300 ring-1 ring-amber-400'
+                        : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+                    }`}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
+            )
+          })()}
         </Modal>
       )}
       {blockedPick && (

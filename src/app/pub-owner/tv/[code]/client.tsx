@@ -416,7 +416,7 @@ export default function TvClient({ code }: { code: string }) {
 
       {/* ── Interludio: la cola sigue visible con barra de progreso ── */}
       {started && interludeActive && !current && nextUp && (
-        <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black via-zinc-950/95 to-transparent px-12 pt-20 pb-6 text-center">
+        <div className="absolute bottom-8 left-8 z-20 w-[46%] rounded-3xl bg-zinc-950/95 p-8 text-center ring-1 ring-zinc-800">
           <p className="font-mono text-8xl font-black tabular-nums text-amber-400">
             {countdown}
           </p>
@@ -459,26 +459,27 @@ export default function TvClient({ code }: { code: string }) {
             onError={() => finish('error')}
             onAutoplayBlocked={() => setAutoplayBlocked(true)}
           />
-          <div className="pointer-events-none absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black/90 to-transparent p-10 pt-24">
+          {/* Info compacta arriba-izquierda: no tapa la letra del karaoke */}
+          <div className="pointer-events-none absolute left-8 top-8 max-w-[620px] rounded-2xl bg-black/70 p-5">
             {current.is_celebration ? (
-              <p className="text-lg font-bold tracking-[0.4em] text-pink-400">
+              <p className="text-sm font-bold tracking-[0.3em] text-pink-400">
                 🎉 CELEBRACIÓN{current.celebration_text ? ` · ${current.celebration_text}` : ''}
               </p>
             ) : (
-              <p className="text-lg font-bold tracking-[0.4em] text-amber-400">CANTANDO AHORA</p>
+              <p className="text-sm font-bold tracking-[0.3em] text-amber-400">CANTANDO AHORA</p>
             )}
-            <p className="mt-1 text-5xl font-black">{current.singer_name}</p>
-            <p className="mt-1 truncate text-3xl text-zinc-300">{current.title}</p>
+            <p className="mt-1 truncate text-3xl font-black">{current.singer_name}</p>
+            <p className="truncate text-lg text-zinc-300">{current.title}</p>
             {voteStats && (
-              <p className="mt-2 text-3xl font-bold text-amber-300">
+              <p className="mt-1 text-xl font-bold text-amber-300">
                 {'★'.repeat(Math.round(voteStats.avg))}
-                <span className="ml-2 text-2xl text-zinc-300">
+                <span className="ml-2 text-base text-zinc-300">
                   {voteStats.avg.toFixed(1)}/5 · {voteStats.count} voto{voteStats.count === 1 ? '' : 's'}
                 </span>
               </p>
             )}
             {nextUp && (
-              <p className="mt-3 text-xl text-zinc-400">
+              <p className="mt-2 truncate text-base text-zinc-400">
                 Después: {nextUp.singer_name} — {nextUp.title}
               </p>
             )}
