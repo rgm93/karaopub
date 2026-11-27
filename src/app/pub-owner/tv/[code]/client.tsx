@@ -339,7 +339,7 @@ export default function TvClient({ code }: { code: string }) {
           </span>
         </h1>
         {room.promo_text && (
-          <p className="max-w-[600px] rounded-2xl bg-amber-500/15 px-6 py-2.5 text-center text-2xl font-black text-amber-300 ring-1 ring-amber-500/40">
+          <p className="max-w-[760px] rounded-2xl bg-amber-500/15 px-6 py-2.5 text-center text-2xl font-black text-amber-300 ring-1 ring-amber-500/40">
             {room.promo_text}
           </p>
         )}
@@ -441,6 +441,11 @@ export default function TvClient({ code }: { code: string }) {
               />
             </div>
           </div>
+          {bgmVideo && (
+            <p className="mt-4 truncate text-xl text-zinc-500">
+              🎵 Suena de fondo: {bgmVideo.title}
+            </p>
+          )}
         </div>
       )}
 
@@ -500,9 +505,11 @@ export default function TvClient({ code }: { code: string }) {
               onAutoplayBlocked={() => setAutoplayBlocked(true)}
             />
           </div>
-          <p className="absolute bottom-5 left-6 z-10 line-clamp-2 max-w-3xl rounded-lg bg-zinc-950/80 px-3 py-1.5 text-xl text-zinc-400">
-            🎵 Suena de fondo: {bgmVideo.title}
-          </p>
+          {!(interludeActive && nextUp) && (
+            <p className="absolute bottom-5 left-6 z-10 line-clamp-2 max-w-3xl rounded-lg bg-zinc-950/80 px-3 py-1.5 text-xl text-zinc-400">
+              🎵 Suena de fondo: {bgmVideo.title}
+            </p>
+          )}
         </>
       )}
 
