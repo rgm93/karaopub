@@ -151,6 +151,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
     queue.length > 0 &&
     myIds.includes(queue[0].id) &&
     !(playing && myIds.includes(playing.id))
+  const nextIsDuet = imNext && queue[0].singer_name.includes(' & ')
   const requestsClosed =
     !!room?.requests_close_at && new Date(room.requests_close_at).getTime() <= Date.now()
 
@@ -179,7 +180,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
       navigator.vibrate?.([250, 120, 250])
       if (notifPerm === 'granted') {
         try {
-          new Notification('🎤 ¡Te toca!', {
+          new Notification(queue[0].singer_name.includes(' & ') ? '🎤 ¡Os toca!' : '🎤 ¡Te toca!', {
             body: `${t.nextUpNotify} ${queue[0].title}`,
             tag: 'karaopub-turn',
           })
@@ -448,7 +449,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
 
       {imNext && (
         <div className="animate-pulse rounded-2xl bg-amber-500 p-4 text-center font-black text-zinc-950 shadow-lg shadow-amber-500/30">
-          {t.youAreNext}
+          {nextIsDuet ? t.youAreNextDuo : t.youAreNext}
         </div>
       )}
 

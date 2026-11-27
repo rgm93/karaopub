@@ -339,7 +339,7 @@ export default function TvClient({ code }: { code: string }) {
           </span>
         </h1>
         {room.promo_text && (
-          <p className="max-w-[480px] truncate rounded-full bg-amber-500/15 px-6 py-2.5 text-2xl font-black text-amber-300 ring-1 ring-amber-500/40">
+          <p className="max-w-[600px] rounded-2xl bg-amber-500/15 px-6 py-2.5 text-center text-2xl font-black text-amber-300 ring-1 ring-amber-500/40">
             {room.promo_text}
           </p>
         )}
@@ -354,11 +354,6 @@ export default function TvClient({ code }: { code: string }) {
               <p className="text-8xl">🎤</p>
               <p className="mt-4 text-6xl font-black text-zinc-300">La cola está vacía</p>
               <p className="mt-3 text-3xl text-zinc-500">Escanea el QR y pide la primera canción</p>
-              {room.promo_text && (
-                <p className="mt-8 rounded-2xl bg-amber-500/15 px-8 py-4 text-4xl font-black text-amber-300 ring-1 ring-amber-500/40">
-                  {room.promo_text}
-                </p>
-              )}
             </div>
           )}
           <ol className="space-y-4">
@@ -446,11 +441,6 @@ export default function TvClient({ code }: { code: string }) {
               />
             </div>
           </div>
-          {room.promo_text && (
-            <p className="mt-5 inline-block rounded-2xl bg-amber-500/15 px-8 py-3 text-3xl font-black text-amber-300 ring-1 ring-amber-500/40">
-              {room.promo_text}
-            </p>
-          )}
         </div>
       )}
 
@@ -465,7 +455,7 @@ export default function TvClient({ code }: { code: string }) {
             onAutoplayBlocked={() => setAutoplayBlocked(true)}
           />
           {/* Info compacta arriba-izquierda: no tapa la letra del karaoke */}
-          <div className="pointer-events-none absolute left-8 top-8 max-w-[620px] rounded-2xl bg-black/70 p-5">
+          <div className="pointer-events-none absolute left-0 top-0 max-w-[620px] rounded-br-2xl bg-black/70 p-5">
             {current.is_celebration ? (
               <p className="text-sm font-bold tracking-[0.3em] text-pink-400">
                 🎉 CELEBRACIÓN{current.celebration_text ? ` · ${current.celebration_text}` : ''}
