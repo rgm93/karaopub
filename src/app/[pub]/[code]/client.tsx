@@ -23,7 +23,13 @@ const ERROR_MESSAGES: Record<string, string> = {
 
 const EMOJIS = ['🎤', '⭐', '🦁', '👑', '🎸', '🦄', '🔥', '🍀', '🐸', '💃', '🕺', '🚀']
 
-type Fav = { videoId: string; title: string; channel: string; thumbnail: string; durationSeconds: number | null }
+const reqToPick = (r: KaraokeRequest): SearchResult => ({
+  videoId: r.video_id,
+  title: r.title,
+  channel: r.channel_title ?? '',
+  thumbnail: r.thumbnail_url ?? '',
+  durationSeconds: r.duration_seconds,
+})
 
 function Modal({
   title,
@@ -81,7 +87,9 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
   const [nameSet, setNameSet] = useState(false)
   const [emoji, setEmoji] = useState('')
   const [duet, setDuet] = useState('')
-  const [favs, setFavs] = useState<Fav[]>([])
+  const [showSung, setShowSung] = useState(false)
+  const [sung, setSung] = useState<KaraokeRequest[] | null>(null)
+  const [sungFilter, setSungFilter] = useState<'all' | 'mine'>('all')
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchResult[]>([])
   const [searching, setSearching] = useState(false)
@@ -117,6 +125,20 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
     }
   }, [pendingPick])
 
+  // Historial de cantadas de la sesión: se carga al abrir el modal
+  useEffect(() => {
+    if (!showSung || !room) return
+    setSung(null)
+    supabase
+      .from('karaoke_requests')
+      .select('*')
+      .eq('room_id', room.id)
+      .eq('status', 'done')
+      .order('played_at', { ascending: false })
+      .limit(50)
+      .then(({ data }) => setSung((data ?? []) as KaraokeRequest[]))
+  }, [showSung, room])
+
   useEffect(() => {
     if (!('Notification' in window)) setNotifPerm('unsupported')
     else setNotifPerm(Notification.permission)
@@ -128,7 +150,6 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
       setNameSet(true)
     }
     setEmoji(localStorage.getItem('karaopub_emoji') ?? '')
-    setFavs(JSON.parse(localStorage.getItem('karaopub_favs') ?? '[]'))
     setMyIds(JSON.parse(localStorage.getItem(`karaopub_my_${code}`) ?? '[]'))
     let dk = localStorage.getItem('karaopub_device')
     if (!dk) {
@@ -271,12 +292,6 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
     const ids = [...myIds, data as string]
     setMyIds(ids)
     localStorage.setItem(`karaopub_my_${code}`, JSON.stringify(ids))
-    const nextFavs = [
-      { videoId: r.videoId, title: r.title, channel: r.channel, thumbnail: r.thumbnail, durationSeconds: r.durationSeconds },
-      ...favs.filter((f) => f.videoId !== r.videoId),
-    ].slice(0, 6)
-    setFavs(nextFavs)
-    localStorage.setItem('karaopub_favs', JSON.stringify(nextFavs))
     setResults([])
     setQuery('')
     setSearched(false)
@@ -546,31 +561,13 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
         <p className="text-center text-zinc-400">{t.noResults}</p>
       )}
 
-      {!searched && favs.length > 0 && (
-        <div className="min-w-0 space-y-3">
-          <p className="text-xs font-bold tracking-widest text-zinc-400">{t.yourLast}</p>
-          {favs.map((r) => (
-            <button
-              key={r.videoId}
-              onClick={() =>
-                isBlocked(r)
-                  ? setBlockedPick(r)
-                  : setPendingPick(r)
-              }
-              className="flex w-full items-center gap-3 rounded-xl bg-zinc-900 p-3 text-left hover:bg-zinc-800"
-            >
-              {r.thumbnail && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={r.thumbnail} alt="" className="h-12 w-20 shrink-0 rounded-lg object-cover" />
-              )}
-              <div className="min-w-0 flex-1">
-                <p className="line-clamp-2 text-sm font-medium leading-snug">{cleanTitle(r.title)}</p>
-                <p className="mt-1 truncate text-xs text-zinc-400">{r.channel}</p>
-              </div>
-              <span className="shrink-0 text-xs font-bold text-amber-400">↻</span>
-            </button>
-          ))}
-        </div>
+      {!searched && (
+        <button
+          onClick={() => setShowSung(true)}
+          className="w-full rounded-xl bg-zinc-900 py-3 text-sm font-bold text-zinc-300 hover:bg-zinc-800"
+        >
+          {t.sungSongs}
+        </button>
       )}
 
       {results.length > 0 && (
@@ -731,6 +728,83 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
             )
           })()}
         </Modal>
+      )}
+      {showSung && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-6"
+          onClick={() => setShowSung(false)}
+        >
+          <div
+            className="flex max-h-[80dvh] w-full max-w-sm flex-col rounded-2xl bg-zinc-900 p-5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-center text-lg font-bold">{t.sungSongs}</h2>
+            <div className="mt-3 flex justify-center gap-2">
+              {(['all', 'mine'] as const).map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setSungFilter(f)}
+                  className={`rounded-full px-5 py-1.5 text-sm font-bold ${
+                    sungFilter === f
+                      ? 'bg-amber-500 text-zinc-950'
+                      : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                  }`}
+                >
+                  {f === 'all' ? t.allSongs : t.mySongs}
+                </button>
+              ))}
+            </div>
+            <div className="mt-3 min-h-0 flex-1 space-y-2 overflow-y-auto">
+              {sung === null && (
+                <p className="py-6 text-center text-sm text-zinc-400">{t.loading}</p>
+              )}
+              {sung !== null &&
+                sung.filter((r) => sungFilter === 'all' || r.singer_key === deviceKey)
+                  .length === 0 && (
+                  <p className="py-6 text-center text-sm text-zinc-400">{t.noSungYet}</p>
+                )}
+              {sung
+                ?.filter((r) => sungFilter === 'all' || r.singer_key === deviceKey)
+                .map((r) => (
+                  <button
+                    key={r.id}
+                    onClick={() => {
+                      const pick = reqToPick(r)
+                      setShowSung(false)
+                      if (isBlocked(pick)) setBlockedPick(pick)
+                      else setPendingPick(pick)
+                    }}
+                    className="flex w-full items-center gap-3 rounded-xl bg-zinc-800/60 p-3 text-left hover:bg-zinc-800"
+                  >
+                    {r.thumbnail_url && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={r.thumbnail_url}
+                        alt=""
+                        className="h-12 w-20 shrink-0 rounded-lg object-cover"
+                      />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="line-clamp-2 text-sm font-medium leading-snug">
+                        {cleanTitle(r.title)}
+                      </p>
+                      <p className="mt-1 truncate text-xs text-zinc-400">
+                        {t.sungBy} {r.singer_name}
+                        {r.applause > 0 ? ` · 👏 ${r.applause}` : ''}
+                      </p>
+                    </div>
+                    <span className="shrink-0 text-xs font-bold text-amber-400">↻</span>
+                  </button>
+                ))}
+            </div>
+            <button
+              onClick={() => setShowSung(false)}
+              className="mt-4 w-full rounded-xl bg-zinc-800 py-3 font-bold hover:bg-zinc-700"
+            >
+              {t.cancel}
+            </button>
+          </div>
+        </div>
       )}
       {blockedPick && (
         <Modal
