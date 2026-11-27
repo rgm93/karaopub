@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { useRoom } from '@/lib/useRoom'
 import { QRImage } from '@/components/QRImage'
 import { Logo } from '@/components/Logo'
+import { cleanTitle } from '@/lib/cleanTitle'
 
 export default function CabinaClient({ code }: { code: string }) {
   const { room, requests, bgm, loading, notFound } = useRoom(code)
@@ -140,7 +141,7 @@ export default function CabinaClient({ code }: { code: string }) {
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <p className="truncate font-bold">{current.singer_name}</p>
-                <p className="truncate text-sm text-zinc-400">{current.title}</p>
+                <p className="truncate text-sm text-zinc-400">{cleanTitle(current.title)}</p>
               </div>
               <button
                 onClick={() => rpc('karaoke_finish_current', { p_outcome: 'skipped' })}
@@ -363,7 +364,7 @@ export default function CabinaClient({ code }: { code: string }) {
               )}
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-bold">{r.singer_name}</p>
-                <p className="truncate text-xs text-zinc-400">{r.title}</p>
+                <p className="truncate text-xs text-zinc-400">{cleanTitle(r.title)}</p>
               </div>
               <button
                 onClick={() => {
@@ -412,7 +413,7 @@ export default function CabinaClient({ code }: { code: string }) {
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-bold">{r.singer}</p>
-                  <p className="truncate text-xs text-zinc-400">{r.title}</p>
+                  <p className="truncate text-xs text-zinc-400">{cleanTitle(r.title)}</p>
                 </div>
                 <div className="shrink-0 text-right">
                   <p className="text-sm font-black text-amber-400">{r.avg.toFixed(1)} ★</p>
@@ -468,7 +469,7 @@ export default function CabinaClient({ code }: { code: string }) {
             {bgmResults.map((r) => (
               <li key={r.videoId} className="flex items-center gap-2 rounded-xl bg-zinc-800 p-2">
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-xs font-bold">{r.title}</p>
+                  <p className="truncate text-xs font-bold">{cleanTitle(r.title)}</p>
                   <p className="truncate text-xs text-zinc-500">{r.channel}</p>
                 </div>
                 <button
@@ -537,7 +538,7 @@ export default function CabinaClient({ code }: { code: string }) {
                         ? '⏸ '
                         : '▶ '
                       : ''}
-                    {t.title}
+                    {cleanTitle(t.title)}
                   </p>
                   {room.bgm_now_id === t.video_id ? (
                     <button

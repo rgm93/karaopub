@@ -7,6 +7,7 @@ import { Logo } from '@/components/Logo'
 import { YtPreview } from '@/components/YtPreview'
 import { STR, type Lang } from '@/lib/i18n'
 import type { KaraokeRequest, SearchResult } from '@/lib/types'
+import { cleanTitle } from '@/lib/cleanTitle'
 
 const ERROR_MESSAGES: Record<string, string> = {
   room_not_found: 'La sala no existe.',
@@ -436,7 +437,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
         )}
         {room.bgm_now && !room.bgm_now_id && (
           <p className="mt-2 truncate rounded-lg bg-zinc-900 px-3 py-1.5 text-sm text-zinc-400">
-            🎵 {t.bgmLabel}: {room.bgm_now}
+            🎵 {t.bgmLabel}: {cleanTitle(room.bgm_now)}
           </p>
         )}
       </header>
@@ -462,7 +463,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
             <p className="mt-1 text-sm font-bold text-amber-300">🎂 {playing.celebration_text}</p>
           )}
           <p className="mt-1 font-bold">{playing.singer_name}</p>
-          <p className="text-sm text-zinc-300">{playing.title}</p>
+          <p className="text-sm text-zinc-300">{cleanTitle(playing.title)}</p>
           {!myIds.includes(playing.id) && (
             <button
               onClick={applaud}
@@ -563,7 +564,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
                 <img src={r.thumbnail} alt="" className="h-12 w-20 shrink-0 rounded-lg object-cover" />
               )}
               <div className="min-w-0 flex-1">
-                <p className="line-clamp-2 text-sm font-medium leading-snug">{r.title}</p>
+                <p className="line-clamp-2 text-sm font-medium leading-snug">{cleanTitle(r.title)}</p>
                 <p className="mt-1 truncate text-xs text-zinc-400">{r.channel}</p>
               </div>
               <span className="shrink-0 text-xs font-bold text-amber-400">↻</span>
@@ -586,7 +587,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
                 <img src={r.thumbnail} alt="" className="h-16 w-28 shrink-0 rounded-lg object-cover" />
               )}
               <div className="min-w-0 flex-1">
-                <p className="line-clamp-2 text-sm font-medium leading-snug">{r.title}</p>
+                <p className="line-clamp-2 text-sm font-medium leading-snug">{cleanTitle(r.title)}</p>
                 <p className="mt-1 truncate text-xs text-zinc-400">
                   {r.channel}
                   {r.durationSeconds
@@ -635,7 +636,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
                     {r.is_celebration && '🎉 '}
                     {r.singer_name}
                   </p>
-                  <p className="truncate text-xs text-zinc-400">{r.title}</p>
+                  <p className="truncate text-xs text-zinc-400">{cleanTitle(r.title)}</p>
                 </div>
                 {myIds.includes(r.id) && i > 0 && (
                   <span className="shrink-0 rounded-full bg-zinc-800 px-2 py-1 text-[10px] font-bold text-zinc-400">
@@ -686,7 +687,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
               onOk={() => setPickStatus('ok')}
             />
           </div>
-          <p className="font-bold text-zinc-200">{pendingPick.title}</p>
+          <p className="font-bold text-zinc-200">{cleanTitle(pendingPick.title)}</p>
           {pickStatus === 'error' ? (
             <p className="mt-1 text-red-300">{t.notPlayable}</p>
           ) : (
@@ -779,7 +780,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
               className="aspect-video w-full"
             />
           </div>
-          <p className="font-bold text-zinc-200">{previewReq.title}</p>
+          <p className="font-bold text-zinc-200">{cleanTitle(previewReq.title)}</p>
           <p className="mt-1">{t.previewBody}</p>
         </Modal>
       )}
@@ -797,7 +798,7 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
           >
             <span className="text-base">🎵</span>
             <p className="min-w-0 flex-1 truncate text-xs text-zinc-400">
-              <span className="font-semibold text-zinc-300">{t.bgmLabel}</span> · {room.bgm_now}
+              <span className="font-semibold text-zinc-300">{t.bgmLabel}</span> · {cleanTitle(room.bgm_now)}
             </p>
             <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
               {t.view}

@@ -8,6 +8,7 @@ import { QRImage } from '@/components/QRImage'
 import { Logo } from '@/components/Logo'
 import { KaraokePlayer } from '@/components/KaraokePlayer'
 import type { PlayerApi } from '@/components/KaraokePlayer'
+import { cleanTitle } from '@/lib/cleanTitle'
 
 export default function TvClient({ code }: { code: string }) {
   const router = useRouter()
@@ -17,6 +18,7 @@ export default function TvClient({ code }: { code: string }) {
   const [started, setStarted] = useState(false)
   const [autoplayBlocked, setAutoplayBlocked] = useState(false)
   const [now, setNow] = useState(Date.now())
+  const [coverUntil, setCoverUntil] = useState(0)
   const [doneId, setDoneId] = useState<string | null>(null)
   const [bgmId, setBgmId] = useState<string | null>(null)
   const [engineErr, setEngineErr] = useState('')
@@ -165,8 +167,7 @@ export default function TvClient({ code }: { code: string }) {
   const countdown = interludeEnd ? Math.max(0, Math.ceil((interludeEnd - now) / 1000)) : null
 
   useEffect(() => {
-    if (interludeEnd === null) return
-    const t = setInterval(() => setNow(Date.now()), 250)
+    const t = setInterval(() => setNow(Date.now()), interludeEnd ? 250 : 1000)
     return () => clearInterval(t)
   }, [interludeEnd])
 
@@ -183,6 +184,14 @@ export default function TvClient({ code }: { code: string }) {
     const t = setInterval(() => refresh(), 30000)
     return () => clearInterval(t)
   }, [refresh])
+
+  // Portada anti-título de YouTube: los primeros segundos de cada canción el
+  // embed muestra la tarjeta con el título original — la tapamos con una franja
+  // negra arriba (nuestra info propia va por la tarjeta de la esquina)
+  const currentId = current?.id ?? null
+  useEffect(() => {
+    if (currentId) setCoverUntil(Date.now() + 7000)
+  }, [currentId])
 
   // Queue engine: when nothing is playing, no interlude is running and there
   // are songs waiting, the TV starts the next one. Si la cola estaba vacía,
@@ -384,7 +393,7 @@ export default function TvClient({ code }: { code: string }) {
                     {r.is_celebration && '🎉 '}
                     {r.singer_name}
                   </p>
-                  <p className="truncate text-2xl text-zinc-400">{r.title}</p>
+                  <p className="truncate text-2xl text-zinc-400">{cleanTitle(r.title)}</p>
                 </div>
               </li>
             ))}
@@ -424,7 +433,7 @@ export default function TvClient({ code }: { code: string }) {
             SIGUIENTE TURNO
           </p>
           <p className="mt-2 text-6xl font-black">{nextUp.singer_name}</p>
-          <p className="mt-1 truncate text-3xl text-zinc-400">{nextUp.title}</p>
+          <p className="mt-1 truncate text-3xl text-zinc-400">{cleanTitle(nextUp.title)}</p>
           <div className="mx-auto mt-5 max-w-5xl">
             <div className="h-5 overflow-hidden rounded-full bg-zinc-800">
               <div
@@ -443,7 +452,7 @@ export default function TvClient({ code }: { code: string }) {
           </div>
           {bgmVideo && (
             <p className="mt-4 truncate text-xl text-zinc-500">
-              🎵 Suena de fondo: {bgmVideo.title}
+              🎵 Suena de fondo: {cleanTitle(bgmVideo.title)}
             </p>
           )}
         </div>
@@ -459,6 +468,10 @@ export default function TvClient({ code }: { code: string }) {
             onError={() => finish('error')}
             onAutoplayBlocked={() => setAutoplayBlocked(true)}
           />
+          {/* Tapa la tarjeta de título que YouTube muestra al empezar */}
+          {now < coverUntil && (
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-black" />
+          )}
           {/* Info compacta arriba-izquierda: no tapa la letra del karaoke */}
           <div className="pointer-events-none absolute left-0 top-0 max-w-[620px] rounded-br-2xl bg-black/70 p-5">
             {current.is_celebration ? (
@@ -469,7 +482,7 @@ export default function TvClient({ code }: { code: string }) {
               <p className="text-sm font-bold tracking-[0.3em] text-amber-400">CANTANDO AHORA</p>
             )}
             <p className="mt-1 truncate text-3xl font-black">{current.singer_name}</p>
-            <p className="truncate text-lg text-zinc-300">{current.title}</p>
+            <p className="truncate text-lg text-zinc-300">{cleanTitle(current.title)}</p>
             {voteStats && (
               <p className="mt-1 text-xl font-bold text-amber-300">
                 {'★'.repeat(Math.round(voteStats.avg))}
@@ -480,7 +493,7 @@ export default function TvClient({ code }: { code: string }) {
             )}
             {nextUp && (
               <p className="mt-2 truncate text-base text-zinc-400">
-                Después: {nextUp.singer_name} — {nextUp.title}
+                Después: {nextUp.singer_name} — {cleanTitle(nextUp.title)}
               </p>
             )}
           </div>
@@ -507,7 +520,7 @@ export default function TvClient({ code }: { code: string }) {
           </div>
           {!(interludeActive && nextUp) && (
             <p className="absolute bottom-5 left-6 z-10 line-clamp-2 max-w-3xl rounded-lg bg-zinc-950/80 px-3 py-1.5 text-xl text-zinc-400">
-              🎵 Suena de fondo: {bgmVideo.title}
+              🎵 Suena de fondo: {cleanTitle(bgmVideo.title)}
             </p>
           )}
         </>
