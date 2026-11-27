@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useRoom } from '@/lib/useRoom'
 import { QRImage } from '@/components/QRImage'
@@ -9,6 +10,7 @@ import { KaraokePlayer } from '@/components/KaraokePlayer'
 import type { PlayerApi } from '@/components/KaraokePlayer'
 
 export default function TvClient({ code }: { code: string }) {
+  const router = useRouter()
   const { room, requests, bgm, loading, notFound, refresh } = useRoom(code)
 
   const [hostKey, setHostKey] = useState<string | null>(null)
@@ -82,6 +84,24 @@ export default function TvClient({ code }: { code: string }) {
       setHostKey(k)
     }
   }, [code])
+
+  // Traspaso automático: si el pub abre una sesión nueva, esta tele salta sola
+  // a la sala activa (mismo pub) cada 15s — sin reemparejar
+  useEffect(() => {
+    if (!hostKey) return
+    const iv = setInterval(async () => {
+      const { data } = await supabase.rpc('karaoke_tv_handoff', {
+        p_code: code,
+        p_host_key: hostKey,
+      })
+      const next = (data?.[0] ?? null) as { code: string; host_key: string } | null
+      if (next && next.code !== code) {
+        localStorage.setItem(`karaopub_host_${next.code}`, next.host_key)
+        router.replace(`/pub-owner/tv/${next.code}?k=${next.host_key}`)
+      }
+    }, 15000)
+    return () => clearInterval(iv)
+  }, [code, hostKey, router])
 
   const current = requests.find((r) => r.id === room?.current_request_id) ?? null
   const queue = requests.filter((r) => r.status === 'queued')

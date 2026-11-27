@@ -122,6 +122,7 @@ export default function PubOwnerPage() {
 
   const newSession = async () => {
     setBusy(true)
+    setPairCode(null)
     const { error: err } = await supabase.rpc('karaoke_new_session')
     if (err) setError('No se pudo crear la sesión.')
     else await load()
@@ -377,31 +378,19 @@ export default function PubOwnerPage() {
         </button>
       </form>
 
-      <section className="space-y-3 rounded-2xl bg-zinc-900 p-5">
+      <section className="space-y-2 rounded-2xl bg-zinc-900 p-5">
         <h2 className="font-bold">🏷️ Marca del pub</h2>
-        <p className="text-xs text-zinc-500">
-          URL de tu logo — aparece en la cabecera de la tele junto al nombre del pub.
-        </p>
-        <div className="flex gap-2">
-          <input
-            value={logoUrl}
-            onChange={(e) => setLogoUrl(e.target.value)}
-            placeholder="https://…/logo.png"
-            className="min-w-0 flex-1 rounded-xl bg-zinc-800 px-4 py-2 text-sm outline-none placeholder:text-zinc-600 focus:ring-2 focus:ring-amber-400"
-          />
-          <button
-            onClick={async () => {
-              const { error: err } = await supabase.rpc('karaoke_set_logo', {
-                p_code: session.code,
-                p_host_key: session.host_key,
-                p_url: logoUrl,
-              })
-              if (err) setError('No se pudo guardar el logo.')
-            }}
-            className="shrink-0 rounded-xl bg-amber-500 px-4 py-2 text-sm font-bold text-zinc-950 hover:bg-amber-400"
-          >
-            Guardar
-          </button>
+        <div className="flex items-center gap-3">
+          {logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={logoUrl} alt="Logo del pub" className="h-10 w-auto rounded-lg" />
+          ) : (
+            <p className="text-xs text-zinc-600">Sin logo configurado.</p>
+          )}
+          <p className="min-w-0 flex-1 text-xs text-zinc-500">
+            Se usa el logo de tu ficha de pub en Pubify automáticamente — cámbialo allí y la tele lo
+            reflejará.
+          </p>
         </div>
       </section>
 
