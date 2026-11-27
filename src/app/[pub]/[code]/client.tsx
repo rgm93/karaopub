@@ -502,6 +502,11 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
         </div>
       )}
 
+      {requestsClosed ? (
+        <div className="animate-pulse rounded-2xl bg-amber-500 p-4 text-center font-black text-zinc-950 shadow-lg shadow-amber-500/30">
+          {t.closedNote}
+        </div>
+      ) : (
       <form onSubmit={search} className="space-y-3 rounded-2xl bg-zinc-900 p-4">
         <div className="relative">
           <input
@@ -530,10 +535,8 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
         {!room.accepting_requests && (
           <p className="text-center text-sm text-zinc-400">{t.paused}</p>
         )}
-        {requestsClosed && (
-          <p className="text-center text-sm text-zinc-400">{t.closedNote}</p>
-        )}
       </form>
+      )}
 
       {msg && <p className="rounded-xl bg-zinc-900 p-3 text-center text-sm text-amber-300">{msg}</p>}
 
