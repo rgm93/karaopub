@@ -22,6 +22,11 @@ export type Room = {
   bgm_play_seq: number
   bgm_cmd: string | null
   bgm_cmd_seq: number
+  promo_text: string
+  logo_url: string
+  karaoke_volume: number
+  bgm_volume: number
+  requests_close_at: string | null
   created_at: string
 }
 
@@ -38,6 +43,9 @@ export type KaraokeRequest = {
   thumbnail_url: string | null
   duration_seconds: number | null
   status: RequestStatus
+  applause: number
+  is_celebration: boolean
+  celebration_text: string
   position: number
   created_at: string
   played_at: string | null

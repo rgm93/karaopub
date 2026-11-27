@@ -22,6 +22,10 @@ export default function CabinaClient({ code }: { code: string }) {
   >([])
   const [bgmSearching, setBgmSearching] = useState(false)
   const [dragIdx, setDragIdx] = useState<number | null>(null)
+  const [promo, setPromo] = useState<string | null>(null)
+  const [kVol, setKVol] = useState<number | null>(null)
+  const [bVol, setBVol] = useState<number | null>(null)
+  const [closeTime, setCloseTime] = useState('')
 
   useEffect(() => {
     const k =
@@ -205,6 +209,128 @@ export default function CabinaClient({ code }: { code: string }) {
         </button>
       </section>
 
+      {/* Ajustes de la noche */}
+      <section className="space-y-4 rounded-2xl bg-zinc-900 p-4">
+        <p className="text-xs font-bold tracking-widest text-zinc-500">✨ LA NOCHE</p>
+
+        <button
+          onClick={async () => {
+            const { error } = await supabase.rpc('karaoke_add_house', {
+              p_code: code,
+              p_host_key: hostKey,
+            })
+            if (error)
+              setMsg(
+                error.message === 'no_history'
+                  ? 'Sin historial: canta alguien primero y luego el señuelo repite éxitos.'
+                  : 'No se pudo añadir la canción de la casa.',
+              )
+          }}
+          className="w-full rounded-xl bg-zinc-800 py-3 font-bold hover:bg-zinc-700 disabled:opacity-40"
+        >
+          🏠 Meter una canción de la casa (rompe el hielo)
+        </button>
+
+        <div>
+          <label className="text-sm font-bold text-zinc-300">
+            📢 Promo en la tele (interludios y cola vacía)
+          </label>
+          <div className="mt-2 flex gap-2">
+            <input
+              value={promo ?? room.promo_text}
+              onChange={(e) => setPromo(e.target.value)}
+              placeholder="p. ej. 2×1 en cervezas hasta las 22h"
+              maxLength={140}
+              className="min-w-0 flex-1 rounded-xl bg-zinc-800 px-4 py-2 text-sm outline-none placeholder:text-zinc-600 focus:ring-2 focus:ring-amber-400"
+            />
+            <button
+              onClick={() => rpc('karaoke_set_promo', { p_text: promo ?? '' })}
+              className="shrink-0 rounded-xl bg-amber-500 px-4 py-2 text-sm font-bold text-zinc-950 hover:bg-amber-400 disabled:opacity-40"
+            >
+              Guardar
+            </button>
+          </div>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="text-sm text-zinc-300">
+            🔊 Volumen karaoke · {kVol ?? room.karaoke_volume}%
+            <input
+              type="range"
+              min={0}
+              max={100}
+              value={kVol ?? room.karaoke_volume}
+              onChange={(e) => setKVol(Number(e.target.value))}
+              onPointerUp={() => {
+                if (kVol !== null)
+                  rpc('karaoke_set_volumes', {
+                    p_karaoke: kVol,
+                    p_bgm: bVol ?? room.bgm_volume,
+                  })
+              }}
+              className="mt-2 w-full accent-amber-500"
+            />
+          </label>
+          <label className="text-sm text-zinc-300">
+            🎵 Volumen fondo · {bVol ?? room.bgm_volume}%
+            <input
+              type="range"
+              min={0}
+              max={100}
+              value={bVol ?? room.bgm_volume}
+              onChange={(e) => setBVol(Number(e.target.value))}
+              onPointerUp={() => {
+                if (bVol !== null)
+                  rpc('karaoke_set_volumes', {
+                    p_karaoke: kVol ?? room.karaoke_volume,
+                    p_bgm: bVol,
+                  })
+              }}
+              className="mt-2 w-full accent-amber-500"
+            />
+          </label>
+        </div>
+
+        <div>
+          <label className="text-sm font-bold text-zinc-300">
+            ⏰ Cerrar peticiones automáticamente
+          </label>
+          <div className="mt-2 flex items-center gap-2">
+            <input
+              type="time"
+              value={closeTime}
+              onChange={(e) => setCloseTime(e.target.value)}
+              className="rounded-xl bg-zinc-800 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-amber-400"
+            />
+            <button
+              disabled={!closeTime}
+              onClick={() => {
+                const [h, m] = closeTime.split(':').map(Number)
+                const d = new Date()
+                d.setHours(h, m, 0, 0)
+                rpc('karaoke_set_close_at', { p_close_at: d.toISOString() })
+              }}
+              className="rounded-xl bg-zinc-800 px-4 py-2 text-sm font-bold hover:bg-zinc-700 disabled:opacity-40"
+            >
+              Fijar
+            </button>
+            {room.requests_close_at && (
+              <button
+                onClick={() => rpc('karaoke_set_close_at', { p_close_at: null })}
+                className="rounded-xl bg-red-500/15 px-4 py-2 text-sm text-red-300 hover:bg-red-500/25"
+              >
+                Quitar (
+                {new Date(room.requests_close_at).toLocaleTimeString('es-ES', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+                )
+              </button>
+            )}
+          </div>
+        </div>
+      </section>
+
       {/* Cola */}
       <section>
         <p className="mb-2 text-sm font-bold tracking-widest text-zinc-400">
@@ -239,6 +365,19 @@ export default function CabinaClient({ code }: { code: string }) {
                 <p className="truncate text-sm font-bold">{r.singer_name}</p>
                 <p className="truncate text-xs text-zinc-400">{r.title}</p>
               </div>
+              <button
+                onClick={() => {
+                  const on = !r.is_celebration
+                  const txt = on ? (prompt('¿Qué se celebra? (ej: Cumple de Laura)') ?? '') : ''
+                  rpc('karaoke_celebrate', { p_request_id: r.id, p_on: on, p_text: txt })
+                }}
+                title={r.is_celebration ? 'Quitar celebración' : 'Marcar celebración 🎉'}
+                className={`rounded-lg px-3 py-2 disabled:opacity-40 ${
+                  r.is_celebration ? 'bg-pink-500/30' : 'bg-zinc-800 hover:bg-zinc-700'
+                }`}
+              >
+                🎉
+              </button>
               <button
                 onClick={() => rpc('karaoke_play_now', { p_request_id: r.id })}
                 title="Reproducir ahora"

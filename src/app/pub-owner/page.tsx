@@ -27,6 +27,21 @@ export default function PubOwnerPage() {
   const [voting, setVoting] = useState(false)
   const [blocks, setBlocks] = useState<{ id: string; term: string }[]>([])
   const [blockTerm, setBlockTerm] = useState('')
+  const [logoUrl, setLogoUrl] = useState('')
+  const [stats, setStats] = useState<{
+    total: number
+    applause: number
+    topSongs: { title: string; n: number }[]
+    topSingers: { name: string; n: number }[]
+    rows: {
+      played_at: string | null
+      singer_name: string
+      title: string
+      channel_title: string | null
+      applause: number
+      status: string
+    }[]
+  } | null>(null)
 
   const load = useCallback(async () => {
     const { data: sess } = await supabase.auth.getSession()
@@ -62,6 +77,39 @@ export default function PubOwnerPage() {
         setMaxQueue(rr.max_queue)
         setQueueMode(rr.queue_mode)
         setVoting(rr.voting_enabled)
+        setLogoUrl(rr.logo_url ?? '')
+        // Stats de la noche: peticiones de esta sala
+        const { data: reqs } = await supabase
+          .from('karaoke_requests')
+          .select('singer_name, title, channel_title, status, applause, played_at')
+          .eq('room_id', rr.id)
+          .in('status', ['done', 'playing', 'queued'])
+          .order('created_at', { ascending: true })
+        if (reqs) {
+          const sung = reqs.filter((r) => r.status === 'done')
+          const count = (key: (r: { singer_name: string; title: string }) => string) => {
+            const m = new Map<string, number>()
+            for (const r of sung) m.set(key(r), (m.get(key(r)) ?? 0) + 1)
+            return [...m.entries()].sort((a, b) => b[1] - a[1])
+          }
+          setStats({
+            total: sung.length,
+            applause: sung.reduce((a, r) => a + r.applause, 0),
+            topSongs: count((r) => r.title).slice(0, 5).map(([title, n]) => ({ title, n })),
+            topSingers: count((r) => r.singer_name)
+              .filter(([name]) => name !== '🏠 La Casa')
+              .slice(0, 5)
+              .map(([name, n]) => ({ name, n })),
+            rows: sung.map((r) => ({
+              played_at: r.played_at,
+              singer_name: r.singer_name,
+              title: r.title,
+              channel_title: r.channel_title,
+              applause: r.applause,
+              status: r.status,
+            })),
+          })
+        }
       }
     }
     setLoading(false)
@@ -328,6 +376,120 @@ export default function PubOwnerPage() {
           {saved ? '✓ Guardado' : 'Guardar ajustes'}
         </button>
       </form>
+
+      <section className="space-y-3 rounded-2xl bg-zinc-900 p-5">
+        <h2 className="font-bold">🏷️ Marca del pub</h2>
+        <p className="text-xs text-zinc-500">
+          URL de tu logo — aparece en la cabecera de la tele junto al nombre del pub.
+        </p>
+        <div className="flex gap-2">
+          <input
+            value={logoUrl}
+            onChange={(e) => setLogoUrl(e.target.value)}
+            placeholder="https://…/logo.png"
+            className="min-w-0 flex-1 rounded-xl bg-zinc-800 px-4 py-2 text-sm outline-none placeholder:text-zinc-600 focus:ring-2 focus:ring-amber-400"
+          />
+          <button
+            onClick={async () => {
+              const { error: err } = await supabase.rpc('karaoke_set_logo', {
+                p_code: session.code,
+                p_host_key: session.host_key,
+                p_url: logoUrl,
+              })
+              if (err) setError('No se pudo guardar el logo.')
+            }}
+            className="shrink-0 rounded-xl bg-amber-500 px-4 py-2 text-sm font-bold text-zinc-950 hover:bg-amber-400"
+          >
+            Guardar
+          </button>
+        </div>
+      </section>
+
+      {stats && (
+        <section className="space-y-4 rounded-2xl bg-zinc-900 p-5">
+          <div className="flex items-center justify-between">
+            <h2 className="font-bold">📊 La noche en números</h2>
+            <button
+              onClick={() => {
+                const csv = [
+                  'cantada_el,cantante,cancion,canal,aplausos',
+                  ...stats.rows.map((r) =>
+                    [
+                      r.played_at ?? '',
+                      `"${r.singer_name.replace(/"/g, '""')}"`,
+                      `"${r.title.replace(/"/g, '""')}"`,
+                      `"${(r.channel_title ?? '').replace(/"/g, '""')}"`,
+                      r.applause,
+                    ].join(','),
+                  ),
+                ].join('\n')
+                const a = document.createElement('a')
+                a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }))
+                a.download = `karaoke-${session.code}.csv`
+                a.click()
+                URL.revokeObjectURL(a.href)
+              }}
+              className="rounded-lg bg-zinc-800 px-3 py-1.5 text-xs font-bold hover:bg-zinc-700"
+            >
+              ⬇ Exportar CSV (repertorio SGAE)
+            </button>
+          </div>
+          <div className="grid grid-cols-3 gap-3 text-center">
+            <div className="rounded-xl bg-zinc-800 p-3">
+              <p className="text-2xl font-black text-amber-400">{stats.total}</p>
+              <p className="text-xs text-zinc-400">cantadas</p>
+            </div>
+            <div className="rounded-xl bg-zinc-800 p-3">
+              <p className="text-2xl font-black text-amber-400">{stats.applause}</p>
+              <p className="text-xs text-zinc-400">aplausos 👏</p>
+            </div>
+            <div className="rounded-xl bg-zinc-800 p-3">
+              <p className="text-2xl font-black text-amber-400">{stats.topSingers.length}</p>
+              <p className="text-xs text-zinc-400">cantantes</p>
+            </div>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <p className="mb-2 text-xs font-bold tracking-widest text-zinc-500">
+                TOP CANCIONES
+              </p>
+              {stats.topSongs.length === 0 && (
+                <p className="text-xs text-zinc-600">Aún no se ha cantado nada.</p>
+              )}
+              <ol className="space-y-1.5">
+                {stats.topSongs.map((s, i) => (
+                  <li key={s.title} className="flex items-center gap-2 text-sm">
+                    <span className="w-5 font-black text-zinc-500">
+                      {['🥇', '🥈', '🥉'][i] ?? i + 1}
+                    </span>
+                    <span className="min-w-0 flex-1 truncate">{s.title}</span>
+                    <span className="shrink-0 text-xs font-bold text-amber-400">×{s.n}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+            <div>
+              <p className="mb-2 text-xs font-bold tracking-widest text-zinc-500">
+                TOP CANTANTES
+              </p>
+              {stats.topSingers.length === 0 && (
+                <p className="text-xs text-zinc-600">Aún nadie ha cantado.</p>
+              )}
+              <ol className="space-y-1.5">
+                {stats.topSingers.map((s, i) => (
+                  <li key={s.name} className="flex items-center gap-2 text-sm">
+                    <span className="w-5 font-black text-zinc-500">
+                      {['🥇', '🥈', '🥉'][i] ?? i + 1}
+                    </span>
+                    <span className="min-w-0 flex-1 truncate">{s.name}</span>
+                    <span className="shrink-0 text-xs font-bold text-amber-400">×{s.n}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="space-y-3 rounded-2xl bg-zinc-900 p-5">
         <h2 className="font-bold">🚫 Canciones o artistas vetados</h2>

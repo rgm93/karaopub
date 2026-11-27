@@ -251,6 +251,14 @@ export default function TvClient({ code }: { code: string }) {
     else if (room.player_cmd === 'nearend') api.nearEnd()
   }, [room])
 
+  // Volúmenes independientes: karaoke vs música de fondo (ajustables desde cabina)
+  useEffect(() => {
+    playerApi.current?.setVolume(room?.karaoke_volume ?? 100)
+  }, [room?.karaoke_volume, current?.id])
+  useEffect(() => {
+    bgmApi.current?.setVolume(room?.bgm_volume ?? 55)
+  }, [room?.bgm_volume, bgmVideo?.id])
+
   // El pub pide sonar un tema de fondo concreto
   const lastBgmPlaySeq = useRef<number | null>(null)
   useEffect(() => {
@@ -302,7 +310,13 @@ export default function TvClient({ code }: { code: string }) {
         <h1 className="flex min-w-0 items-center gap-4 text-4xl font-black">
           <Logo className="h-7 w-auto" />
           Karao<span className="text-amber-400">Pub</span>
-          <span className="ml-4 inline text-2xl font-medium text-zinc-400">{room.name}</span>
+          <span className="ml-4 flex items-center gap-3 text-2xl font-medium text-zinc-400">
+            {room.logo_url && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={room.logo_url} alt="" className="h-9 w-auto rounded-lg" />
+            )}
+            {room.name}
+          </span>
         </h1>
       </header>
 
@@ -315,6 +329,11 @@ export default function TvClient({ code }: { code: string }) {
               <p className="text-8xl">🎤</p>
               <p className="mt-4 text-6xl font-black text-zinc-300">La cola está vacía</p>
               <p className="mt-3 text-3xl text-zinc-500">Escanea el QR y pide la primera canción</p>
+              {room.promo_text && (
+                <p className="mt-8 rounded-2xl bg-amber-500/15 px-8 py-4 text-4xl font-black text-amber-300 ring-1 ring-amber-500/40">
+                  {room.promo_text}
+                </p>
+              )}
             </div>
           )}
           <ol className="space-y-4">
@@ -341,7 +360,10 @@ export default function TvClient({ code }: { code: string }) {
                   />
                 )}
                 <div className="min-w-0">
-                  <p className="truncate text-4xl font-bold">{r.singer_name}</p>
+                  <p className="truncate text-4xl font-bold">
+                    {r.is_celebration && '🎉 '}
+                    {r.singer_name}
+                  </p>
                   <p className="truncate text-2xl text-zinc-400">{r.title}</p>
                 </div>
               </li>
@@ -399,6 +421,11 @@ export default function TvClient({ code }: { code: string }) {
               />
             </div>
           </div>
+          {room.promo_text && (
+            <p className="mt-5 inline-block rounded-2xl bg-amber-500/15 px-8 py-3 text-3xl font-black text-amber-300 ring-1 ring-amber-500/40">
+              {room.promo_text}
+            </p>
+          )}
         </div>
       )}
 
@@ -413,7 +440,13 @@ export default function TvClient({ code }: { code: string }) {
             onAutoplayBlocked={() => setAutoplayBlocked(true)}
           />
           <div className="pointer-events-none absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black/90 to-transparent p-10 pt-24">
-            <p className="text-lg font-bold tracking-[0.4em] text-amber-400">CANTANDO AHORA</p>
+            {current.is_celebration ? (
+              <p className="text-lg font-bold tracking-[0.4em] text-pink-400">
+                🎉 CELEBRACIÓN{current.celebration_text ? ` · ${current.celebration_text}` : ''}
+              </p>
+            ) : (
+              <p className="text-lg font-bold tracking-[0.4em] text-amber-400">CANTANDO AHORA</p>
+            )}
             <p className="mt-1 text-5xl font-black">{current.singer_name}</p>
             <p className="mt-1 truncate text-3xl text-zinc-300">{current.title}</p>
             {voteStats && (
@@ -430,6 +463,12 @@ export default function TvClient({ code }: { code: string }) {
               </p>
             )}
           </div>
+          {current.applause > 0 && (
+            <div className="pointer-events-none absolute top-8 right-8 rounded-2xl bg-black/70 px-6 py-4 text-center">
+              <p className="text-5xl">👏</p>
+              <p className="mt-1 text-3xl font-black text-amber-400">{current.applause}</p>
+            </div>
+          )}
         </div>
       )}
 
