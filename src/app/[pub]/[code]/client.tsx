@@ -602,36 +602,45 @@ export default function SalaClient({ pubId, code }: { pubId: string; code: strin
       {results.length > 0 && (
         <div className="min-w-0 space-y-3">
           <p className="text-xs font-bold tracking-widest text-zinc-400">{t.pickYours}</p>
-          {results.map((r) => (
-            <button
-              key={r.videoId}
-              onClick={() => {
-                if (isBlocked(r)) return setBlockedPick(r)
-                const sungHit = wasSung(r)
-                if (sungHit) {
-                  setSungPick({ pick: r, singer: sungHit.singer_name })
-                  setResults([])
-                  setQuery('')
-                  setSearched(false)
-                } else setPendingPick(r)
-              }}
-              className="flex w-full items-center gap-3 rounded-xl bg-zinc-900 p-3 text-left hover:bg-zinc-800"
-            >
-              {r.thumbnail && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={r.thumbnail} alt="" className="h-16 w-28 shrink-0 rounded-lg object-cover" />
-              )}
-              <div className="min-w-0 flex-1">
-                <p className="line-clamp-2 text-sm font-medium leading-snug">{cleanTitle(r.title)}</p>
-                <p className="mt-1 truncate text-xs text-zinc-400">
-                  {r.channel}
-                  {r.durationSeconds
-                    ? ` · ${Math.floor(r.durationSeconds / 60)}:${String(r.durationSeconds % 60).padStart(2, '0')}`
-                    : ''}
-                </p>
-              </div>
-            </button>
-          ))}
+          {results.map((r) => {
+            const sungHit = wasSung(r)
+            return (
+              <button
+                key={r.videoId}
+                onClick={() => {
+                  if (isBlocked(r)) return setBlockedPick(r)
+                  if (sungHit) {
+                    setSungPick({ pick: r, singer: sungHit.singer_name })
+                    setResults([])
+                    setQuery('')
+                    setSearched(false)
+                  } else setPendingPick(r)
+                }}
+                className={`flex w-full items-center gap-3 rounded-xl p-3 text-left hover:bg-zinc-800 ${
+                  sungHit ? 'bg-zinc-900/50 opacity-60' : 'bg-zinc-900'
+                }`}
+              >
+                {r.thumbnail && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={r.thumbnail} alt="" className="h-16 w-28 shrink-0 rounded-lg object-cover" />
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="line-clamp-2 text-sm font-medium leading-snug">{cleanTitle(r.title)}</p>
+                  <p className="mt-1 truncate text-xs text-zinc-400">
+                    {r.channel}
+                    {r.durationSeconds
+                      ? ` · ${Math.floor(r.durationSeconds / 60)}:${String(r.durationSeconds % 60).padStart(2, '0')}`
+                      : ''}
+                  </p>
+                </div>
+                {sungHit && (
+                  <span className="shrink-0 rounded-full bg-zinc-800 px-3 py-1 text-xs font-black tracking-wide text-amber-400">
+                    {t.sungBadge}
+                  </span>
+                )}
+              </button>
+            )
+          })}
         </div>
       )}
 
